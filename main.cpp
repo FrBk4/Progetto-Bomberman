@@ -3,6 +3,7 @@
 int main() {
     initscr();
 
+
     printw("PDCurses funziona!");
     refresh();
 

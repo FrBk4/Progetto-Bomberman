@@ -1,3 +1,3 @@
 # Progetto-Bomberman
 
-Progetto Universitario in C++ con nCurses;
+Progetto Universitario in C++ con nCurses

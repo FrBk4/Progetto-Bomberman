@@ -13,7 +13,7 @@ void Menu::draw(const string& title,
 
     // Titolo
     mvprintw(2, (w - title.length()) / 2, "%s", title.c_str());
-    mvprintw(4, 2, "SU/GIU per muovere, INVIO per scegliere, ESC per uscire");
+    mvprintw(4, 2, "SU/GIU o W/S per muovere, INVIO per scegliere, ESC per uscire");
 
     int startY = 7;
     for (int i = 0; i < count; i++) {
@@ -42,11 +42,11 @@ int Menu::run(const string& title,
 
         if (ch == 27) { // Ascii di Esc
             return -1;
-        } else if (ch == KEY_UP) {
+        } else if (ch == KEY_UP || ch == 'w') {
             selected = (selected - 1 + count) % count;
-        } else if (ch == KEY_DOWN) {
+        } else if (ch == KEY_DOWN || ch == 's') {
             selected = (selected + 1) % count;
-        } else if (ch == KEY_ENTER || ch == '\n' || ch == 10 || ch == 13) { // Copre i vari Enter che possono arrivare
+        } else if (ch == KEY_ENTER || ch == '\n' || ch == 13) { // Copre i vari Enter che possono arrivare
             return selected;
         }
     }

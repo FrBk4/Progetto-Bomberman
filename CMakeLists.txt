@@ -6,8 +6,14 @@ set(CMAKE_CXX_STANDARD 20)
 include_directories(C:/pdcurses/PDCurses-master)
 
 add_executable(ascii_bomberman
-        main.cpp
+        src/main.cpp
+        include/Menu.h
+        src/Game.cpp
+        src/Menu.cpp
+        include/Game.h
 )
+
+target_include_directories(ascii_bomberman PRIVATE include)
 
 target_link_libraries(ascii_bomberman
         C:/pdcurses/PDCurses-master/wincon/pdcurses.a

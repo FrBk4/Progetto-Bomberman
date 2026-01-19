@@ -9,15 +9,14 @@ public:
     // count = numero di voci
     // ritorna indice selezionato
     // ritorna -1 se ESC
-    int run(const std::string& title,
-            const std::string items[],
+    int run(const std::string items[],
             int count);
 
 private:
-    void draw(const std::string& title,
-              const std::string items[],
+    void draw(const std::string items[],
               int count,
-              int selected);
+              int selected,
+              int key);
 };
 
 #endif // ASCII_BOMBERMAN_MENU_H

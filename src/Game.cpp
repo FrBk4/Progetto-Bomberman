@@ -26,7 +26,7 @@ void Game::run() {
     int itemCount = 3;
 
     while (true) {
-        int choice = menu_.run("ASCII Bomberman", items, itemCount);
+        int choice = menu_.run(items, itemCount);
 
         if (choice == -1 || choice == 2) {
             break;

@@ -5,18 +5,15 @@
 
 class Menu {
 private:
-    void draw(const std::string items[],
-              int count,
-              int selected,
-              int key);
-
-    static const int LOGO_LINES = 7;
+    static const int LOGO_LINES = 6;
     static const int LOGO_MAXW  = 140;
 
     char logoGrid[LOGO_LINES][LOGO_MAXW];
     int flameTicks[LOGO_LINES][LOGO_MAXW];
     int logoWidth = 0;
     bool logoReady = false;
+
+    double startTime = -1.0;
 
     struct Bomb {
         int xRel;
@@ -34,10 +31,17 @@ private:
     void updateBombAnimation();
     double nowSec();
     void destroyCross(int xRel, int yRel, int R);
-
+    void draw(const std::string items[],
+              int countItems,
+              int selected,
+              int key,
+              const std::string subtitles[],
+              int countSubt);
 public:
     int run(const std::string items[],
-              int count);
+              int countItems,
+              const std::string subtitles[],
+              int countSubt);
 };
 
 #endif // ASCII_BOMBERMAN_MENU_H

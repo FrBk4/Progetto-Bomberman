@@ -25,12 +25,18 @@ void Game::run() { // Gestisce il gameloop
     string items[3]; // Elenco delle voci del menu
     items[0] = "Nuova partita";
     items[1] = "Classifica";
-    items[2] = "Quit";
+    items[2] = "Esci";
+
+    string subtitles[3]; // Elenco delle voci del sottomenu
+    subtitles[0] = "Premere [P] per vedere i comandi!";
+    subtitles[1] = "Progetto Ascii Bomberman!";
+    subtitles[2] = "Fatto da Antonio Luca Pirrone, Manuel Sgarbi e Vittorio Biagini!";
 
     int itemCount = 3;
+    int subtCount = 3;
 
     while (true) { // Gestisce il risultato dell'input dentro al menu
-        int choice = menu_.run(items, itemCount); // Chiama run() finché l'utente non seleziona qualcosa dal menu
+        int choice = menu_.run(items, itemCount, subtitles, subtCount); // Chiama run() finché l'utente non seleziona qualcosa dal menu
 
         if (choice == -1 || choice == 2) { // -1 quando Esc, 2 quando l'utente sceglie "quit" dal menu
             break;
@@ -38,6 +44,7 @@ void Game::run() { // Gestisce il gameloop
 
         clear();
         if (choice == 0) { // Da qua bisogna poi far partire la mappa e il gioco
+            napms(200); // Breve delay per far lasciare di più a schermo il titolo distrutto
             mvprintw(1, 2, "Hai scelto: Nuova partita");
         } else if (choice == 1) {
             mvprintw(1, 2, "Hai scelto: Classifica");

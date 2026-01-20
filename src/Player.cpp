@@ -1,6 +1,6 @@
 #include "../include/Player.hpp"
 
-Player::Player(int startX, int startY) {
+Player::Player(int startY, int startX) {
     x = startX;
     y = startY;
     lives = 3;
@@ -8,7 +8,7 @@ Player::Player(int startX, int startY) {
     symbol = 'P';
 }
 
-void Player::move(int dx, int dy) {
+void Player::move(int dy, int dx) {
     x += dx;
     y += dy;
 }

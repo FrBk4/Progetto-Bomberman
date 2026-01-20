@@ -10,7 +10,7 @@ private:
     bool alive;
 
 public:
-    Enemy(int startX, int startY, int speed, char symbol);
+    Enemy(int startY, int startX, int speed, char symbol);
 
     void moveRandom();
     void kill();

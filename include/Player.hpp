@@ -10,9 +10,9 @@ private:
     char symbol;
 
 public:
-    Player(int startX, int startY);
+    Player(int startY, int startX);
 
-    void move(int dx, int dy);
+    void move(int dy, int dx);
 
     int getX() const;
     int getY() const;

@@ -1,7 +1,7 @@
 #include "../include/Enemy.hpp"
 #include <cstdlib>
 
-Enemy::Enemy(int startX, int startY, int spd, char sym) {
+Enemy::Enemy(int startY, int startX, int spd, char sym) {
     x = startX;
     y = startY;
     speed = spd;

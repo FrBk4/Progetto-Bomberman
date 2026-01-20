@@ -7,12 +7,12 @@ include_directories(C:/pdcurses/PDCurses-master)
 
 add_executable(ascii_bomberman
         src/main.cpp
-        include/Menu.h
         src/Game.cpp
         src/Menu.cpp
         include/Game.h
-        src/levels.cpp
-        src/levels.h
+        include/Menu.h
+        include/Leaderboard.h
+        src/Leaderboard.cpp
 )
 
 target_include_directories(ascii_bomberman PRIVATE include)

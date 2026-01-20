@@ -46,12 +46,12 @@ void Game::run() { // Gestisce il gameloop
         if (choice == 0) { // Da qua bisogna poi far partire la mappa e il gioco
             napms(200); // Breve delay per far lasciare di più a schermo il titolo distrutto
             mvprintw(1, 2, "Hai scelto: Nuova partita");
+            mvprintw(3, 2, "Premi un tasto per tornare al menu...");
+            getch();
         } else if (choice == 1) {
-            mvprintw(1, 2, "Hai scelto: Classifica");
+            lb_.run();
         }
-        mvprintw(3, 2, "Premi un tasto per tornare al menu...");
         refresh();
-        getch();
     }
 
     shutdownCurses();

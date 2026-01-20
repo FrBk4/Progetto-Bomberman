@@ -11,11 +11,11 @@ double Menu::nowSec() {
 void Menu::initLogo() { // Inizializza il titolo
     const char* logo[] = { // Titolo in ascii art
         ".:::::::.      ...     .        :  .:::::::.   ,:::::: :::::::..   .        :     :::.    '::.    :::.",
-        " ';;;'';;'  .;;;;;;;.  ;;,.    ;;;  ';;;'';;'  ;;;'''' ;;;;``;;;;  ;;,.    ;;;    ;;`;;    ;;;;,  `;;;",
-        "  [[[,,[[;. [[     '[[ [[[[, ,[[[[,  [[[,,[[   [[cccc   [[[,/[[['  [[[[, ,[[[[,  ,[[ '[[,   [[[[[. '[[",
-        "  $$''''Y$$ $$,     $$ $$$$$$$$'$$$  $$''''Y$$ $$''''   $$$$$$c    $$$$$$$$'$$$  $$$cc$$$c  '$$ 'Y$c$$",
-        "  88o,,od8P 888,_ _,88 888 Y88' 888o 88o,,od8P 888oo,_  888b '88b  88 Y88'  888o o88   888o o88    Y88",
-        " ''YUMMMP'   'YMMMMMP' MMM  M'  'MMM 'YUMMMP'  'YYYUMM MMMM   'WY' MM  M'   'MMM MM'  'YMMY MM'     YM"};
+        " ';;;'';;.  .;;;;;;;.  ;;,.    ;;;  ';;;'';;.  ;;;'''' ;;;;``;;;;  ;;,.    ;;;    ;;`;;    ;;;;,  `;;;",
+        "  [[[,,[[;. [['    '[[ [[[[, ,[[[[,  [[[,,[[;. [[cccc   [[[,/[[['  [[[[, ,[[[[,  ,[[ '[[,   [[[[[. '[[",
+        "  $$''''Y$$ $$,     $$ $$$$$$$$'$$$  $$''''Y$$ $$''''   $$$$$$c    $$$$$$$$'$$$  $$$cc$$$c  ;$$''Y$c$$.",
+        "  88o,,od8P 888,_ _,88 888 Y88' 888o 88o,,od8P 888oo,_  888b '88b  888 Y88' 888o o88  '888o o88'  'Y88;",
+        " ''YUMMMP'   'YMMMMMP' MMM  M'  'MMM 'YUMMMP'  'YYYUMM YMMM   'WYP MMM  M'  'MMM MM'   YMMY MM'     YMb"};
 
     /*const char* logo[] = { // Titolo base (se si vuole cambiare titolo ricordarsi di mettere LOGO_LINES = 7 in menu.h)
         "#########   ########    ###   ###   #########  ########## #########    ###   ###       ###     ###     ###",
@@ -27,7 +27,7 @@ void Menu::initLogo() { // Inizializza il titolo
         "#########   ########  ###       ### #########  ########## ###    ### ###       ### ###     ### ###     ###"};*/
 
     logoWidth = 0;
-    for (int i = 0; i < LOGO_LINES; i++) { // Calcolo larghezza del titolo (per centrarlo)
+    for (int i = 0; i < LogoLines; i++) { // Calcolo larghezza del titolo (per centrarlo)
         int len = (int)strlen(logo[i]);
         if (len > logoWidth) logoWidth = len;
 
@@ -35,16 +35,16 @@ void Menu::initLogo() { // Inizializza il titolo
         logoGrid[i][LOGO_MAXW - 1] = '\0';
     }
 
-    for (int y = 0; y < LOGO_LINES; y++)
+    for (int y = 0; y < LogoLines; y++)
         for (int x = 0; x < LOGO_MAXW; x++)
             flameTicks[y][x] = 0;
 
     logoReady = true; // Segnala che il titolo è stato disegnato e non serve più aggiornarlo fino a che non viene avviata nuova partita
 }
 
-void Menu::destroyCross(int xRel, int yRel, int R) { // Animazione per la distruzione del titolo per via delle bombe
+void Menu::destroyCross(int xRel, int yRel, const int R) { // Animazione per la distruzione del titolo per via delle bombe
     auto burn = [&](int x, int y) {
-        if (y < 0 || y >= LOGO_LINES) return;
+        if (y < 0 || y >= LogoLines) return;
         if (x < 0 || x >= logoWidth) return;
 
         logoGrid[y][x] = ' ';
@@ -56,8 +56,10 @@ void Menu::destroyCross(int xRel, int yRel, int R) { // Animazione per la distru
     for (int d = 1; d <= R; d++) { // Calcolo della posizione dell'esplosione
         burn(xRel - d, yRel);
         burn(xRel + d, yRel);
-        burn(xRel, yRel - d);
-        burn(xRel, yRel + d);
+        if (d != 3) {
+            burn(xRel, yRel - d);
+            burn(xRel, yRel + d);
+        }
     }
 }
 
@@ -70,9 +72,9 @@ void Menu::startBombAnimation() { // Funzione che da il via a tutto il processo 
 
     srand(time(nullptr)); // Per la generazione della posizione delle bombe
 
-    bombs[0] = { rand() % logoWidth, rand() % LOGO_LINES, t0 + 0.8, false }; // Generazione bombe
-    bombs[1] = { rand() % logoWidth, rand() % LOGO_LINES, t0 + 1.3, false };
-    bombs[2] = { rand() % logoWidth, rand() % LOGO_LINES, t0 + 1.8, false };
+    bombs[0] = { rand() % logoWidth, rand() % LogoLines, t0 + 0.8, false }; // Generazione bombe
+    bombs[1] = { rand() % logoWidth, rand() % LogoLines, t0 + 1.3, false };
+    bombs[2] = { rand() % logoWidth, rand() % LogoLines, t0 + 1.8, false };
 }
 
 void Menu::updateBombAnimation() {
@@ -91,7 +93,7 @@ void Menu::updateBombAnimation() {
         animActive = false;
     }
 
-    for (int y = 0; y < LOGO_LINES; y++) {
+    for (int y = 0; y < LogoLines; y++) {
         for (int x = 0; x < logoWidth; x++) {
             if (flameTicks[y][x] > 0) flameTicks[y][x]--;
         }
@@ -110,24 +112,24 @@ void Menu::draw(const string items[], // Gestisce la stampa delle varie cose
 
     box(stdscr, 0, 0); // Outline del menu
 
-    int h, w; // Valore massimo di altezza e larghezza della finestra principale
-    getmaxyx(stdscr, h, w);
+    int hMax, wMax; // Valore massimo di altezza e larghezza della finestra principale
+    getmaxyx(stdscr, hMax, wMax);
 
     if (!logoReady) initLogo(); // Inizializza il titolo
     updateBombAnimation(); // Controlla che non sia da attivare l'animazione delle bombe
 
-    int startX = (w - logoWidth) / 2; // Coordinate di dove si stampa il titolo
+    int startX = (wMax - logoWidth) / 2; // Coordinate di dove si stampa il titolo
     int startY = 4;
 
     bool pulse = ((int)(nowSec()) % 2) == 0; // Pulsazione alternata (ogni secondo)
     if (pulse) attron(A_BOLD);
-    for (int i = 0; i < LOGO_LINES; i++) { // Stampa del titolo
+    for (int i = 0; i < LogoLines; i++) { // Stampa del titolo
         mvprintw(startY + i, startX, "%s", logoGrid[i]);
     }
     if (pulse) attroff(A_BOLD);
 
     attron(COLOR_PAIR(1)); // Colore delle fiamme
-    for (int y = 0; y < LOGO_LINES; y++) { // Stampa delle fiamme
+    for (int y = 0; y < LogoLines; y++) { // Stampa delle fiamme
         for (int x = 0; x < logoWidth; x++) {
             if (flameTicks[y][x] > 0) {
                 mvaddch(startY + y, startX + x, ' ');
@@ -160,7 +162,7 @@ void Menu::draw(const string items[], // Gestisce la stampa delle varie cose
         box(stdscr, 0, 0);
     }
 
-    int startMenuY = h - countItems - 4; // Riga iniziale del menu
+    int startMenuY = hMax - countItems - 4; // Riga iniziale del menu
 
     for (int i = 0; i < countItems; i++) { // Stampa elementi del menu
         int x = 9; // Colonna iniziale del menu
@@ -172,9 +174,9 @@ void Menu::draw(const string items[], // Gestisce la stampa delle varie cose
         if (i == selected) attroff(A_REVERSE);
     }
 
-    int i = (int)((nowSec() - startTime) / 10.0); // Ciclo dei sottotitoli
+    int i = (int)((nowSec() - startTime) / 7.0); // Ciclo dei sottotitoli
     if (i >= countSubt) i = 0;
-    mvprintw(h - 2, w - size(subtitles[i]) - 1 , "%s", subtitles[i].c_str()); // Stampa sottotitoli
+    mvprintw(hMax - 2, wMax - size(subtitles[i]) - 1 , "%s", subtitles[i].c_str()); // Stampa sottotitoli
     refresh();
 }
 

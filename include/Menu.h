@@ -5,11 +5,11 @@
 
 class Menu {
 private:
-    static const int LOGO_LINES = 6;
+    static const int LogoLines = 6;
     static const int LOGO_MAXW  = 140;
 
-    char logoGrid[LOGO_LINES][LOGO_MAXW];
-    int flameTicks[LOGO_LINES][LOGO_MAXW];
+    char logoGrid[LogoLines][LOGO_MAXW];
+    int flameTicks[LogoLines][LOGO_MAXW];
     int logoWidth = 0;
     bool logoReady = false;
 

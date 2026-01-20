@@ -1,4 +1,4 @@
-#include "Enemy.hpp"
+#include "../include/Enemy.hpp"
 #include <cstdlib>
 
 Enemy::Enemy(int startX, int startY, int spd, char sym) {

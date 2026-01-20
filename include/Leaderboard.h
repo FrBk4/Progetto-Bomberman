@@ -21,6 +21,19 @@ protected:
 
     bool frameInit = false;
 
+    static const int MAX_SCORES = 100;
+
+    struct Entry {
+        char name[32];
+        int score;
+    };
+
+    Entry entries[MAX_SCORES];
+    int entryCount = 0;
+
+    void loadFromFile(const char* filename);
+    void sortEntries(); // ordina decrescente per score
+
     void initWindow(int);
     void destroyWindow();
     void clearInner();

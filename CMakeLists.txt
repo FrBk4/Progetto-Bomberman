@@ -13,7 +13,10 @@ add_executable(ascii_bomberman
         include/Menu.h
         include/Leaderboard.h
         src/Leaderboard.cpp
-        src/levels.h
+        include/Score.h
+        src/Score.cpp
+        cmake-build-debug/Leaderboard.txt
+        include/levels.h
         src/levels.cpp
 )
 

@@ -2,9 +2,47 @@
 #include <curses.h>
 #include <cstring>
 #include <ctime>
+#include <cstdio>
 
 double Leaderboard::nowSec() { // Calcola il tempo (serve per la pulsazione dell'ascii art)
     return (double)clock() / CLOCKS_PER_SEC;
+}
+
+void Leaderboard::loadFromFile(const char* filename) {
+    entryCount = 0;
+
+    FILE* f = fopen(filename, "r");
+    if (f == nullptr) return;
+
+    while (entryCount < MAX_SCORES) {
+        char n[32];
+        int s;
+
+        // legge: nome punteggio
+        if (fscanf(f, "%31s %d", n, &s) != 2) break;
+
+        strncpy(entries[entryCount].name, n, 31);
+        entries[entryCount].name[31] = '\0';
+        entries[entryCount].score = s;
+        entryCount++;
+    }
+
+    fclose(f);
+}
+
+void Leaderboard::sortEntries() {
+    for (int i = 0; i < entryCount - 1; i++) {
+        int best = i;
+        for (int j = i + 1; j < entryCount; j++) {
+            if (entries[j].score > entries[best].score)
+                best = j;
+        }
+        if (best != i) {
+            Entry tmp = entries[i];
+            entries[i] = entries[best];
+            entries[best] = tmp;
+        }
+    }
 }
 
 void Leaderboard::destroyWindow() { // Distrugge la finestra (per quanto si torna nel menu principale)
@@ -69,8 +107,8 @@ void Leaderboard::drawDynamic() { // Disegna ciò che cambia ogni frame (pulsazi
     getmaxyx(stdscr, hMax, wMax);
 
     const char* logo[] = { // Scritta in ascii art
-        "[[   '88P'''  [[;[[  d88op, '88P''' [[[[;;, 888''b,  d88oop   [[;[[  [[[[;;, d88op,",
-        "$$    $$___   $$ '$. $$  '$; $$___  $$[ ]$$ $$c__o  $$'  '$$  $$ '$. $$[ ]$$ $$  '$;",
+        "[[   '88P'''  [[;[[  d88op. '88P''' [[[[;;, 888''b,  d88oop   [[;[[  [[[[;;, d88op.",
+        "$$    $$___  ,$$ '$. $$  '$; $$___  $$[ ]$$ $$c__o  $$'  '$$ ,$$ '$. $$[ ]$$ $$  '$;",
         "88    88'''  o88oo88 88   8; 88'''  888;8o  88;''8o 88,  ,88 o88oo88 888;8o  88   8;",
         "YYMUo YMMUYo UM' 'YP YMoo8P 'YMMUYo YM 'MMo 'MMMMP   d8P,oP' UM' 'YP YM 'MMo YMoo8P"
     };
@@ -105,14 +143,14 @@ void Leaderboard::drawDynamic() { // Disegna ciò che cambia ogni frame (pulsazi
         mvwprintw(boardWin, 1, (boardW - 10) / 2, "CLASSIFICA"); // Stampa della scritta di titolo della classifica
         wattroff(boardWin, A_BOLD);
 
-        mvwprintw(boardWin, 5, 2, "1) AAA"); // Placeholder dei dati
-        mvwprintw(boardWin, 5, boardW - 10, "1200");
+        int row = 5;
+        int maxRows = boardH - 7; // spazio disponibile
+        if (maxRows < 0) maxRows = 0;
 
-        mvwprintw(boardWin, 6, 2, "2) BBB");
-        mvwprintw(boardWin, 6, boardW - 10, "900");
-
-        mvwprintw(boardWin, 7, 2, "3) CCC");
-        mvwprintw(boardWin, 7, boardW - 10, "500");
+        for (int i = 0; i < entryCount && i < maxRows; i++) {
+            mvwprintw(boardWin, row + i, 2, "%d) %s", i + 1, entries[i].name);
+            mvwprintw(boardWin, row + i, boardW - 10, "%d", entries[i].score);
+        }
 
         mvwprintw(boardWin, boardH - 2, 2, "[ESC] Torna indietro"); // Comando per uscire (si può uscire anche con INVIO)
     }
@@ -131,6 +169,9 @@ void Leaderboard::draw() { // Si occupa di chiamare i vari metodi per la grafica
 
 void Leaderboard::run() {
     nodelay(stdscr, TRUE); // L'input non blocca così da far funzionare le animazioni
+
+    loadFromFile("Leaderboard.txt");
+    sortEntries();
 
     frameInit = false;
     draw(); // Primo disegno del menu

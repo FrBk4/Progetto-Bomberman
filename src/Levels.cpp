@@ -1,7 +1,7 @@
-#include<iostream>
-#include<ctime>
-#include "levels.h"
-#include<ncurses/ncurses.h>
+#include <iostream>
+#include <ctime>
+#include "Levels.h"
+#include <curses.h>
 
 using namespace std;
 

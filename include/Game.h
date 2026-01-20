@@ -4,6 +4,7 @@
 #endif //ASCII_BOMBERMAN_GAME_H
 
 #include "Menu.h"
+#include "leaderboard.h"
 
 class Game {
 public:
@@ -14,4 +15,5 @@ private:
     void shutdownCurses();
 
     Menu menu_;
+    Leaderboard lb_;
 };

@@ -18,8 +18,7 @@ void Leaderboard::loadFromFile(const char* filename) {
         char n[32];
         int s;
 
-        // legge: nome punteggio
-        if (fscanf(f, "%31s %d", n, &s) != 2) break;
+        if (fscanf(f, "%31s %d", n, &s) != 2) break; // Legge nome e punteggio
 
         strncpy(entries[entryCount].name, n, 31);
         entries[entryCount].name[31] = '\0';
@@ -85,7 +84,7 @@ void Leaderboard::initWindow(int startY) { // Inizializza la finestra dove viene
 
 void Leaderboard::drawStatic() { // Disegna ciò che non cambia ogni frame
 
-    if (!frameInit) { // Digna il bordo
+    if (!frameInit) { // Disegna il bordo
         erase();
         box(stdscr, 0, 0);
         frameInit = true;
@@ -147,7 +146,7 @@ void Leaderboard::drawDynamic() { // Disegna ciò che cambia ogni frame (pulsazi
         int maxRows = boardH - 7; // spazio disponibile
         if (maxRows < 0) maxRows = 0;
 
-        for (int i = 0; i < entryCount && i < maxRows; i++) {
+        for (int i = 0; i < 10 && i < maxRows; i++) {
             mvwprintw(boardWin, row + i, 2, "%d) %s", i + 1, entries[i].name);
             mvwprintw(boardWin, row + i, boardW - 10, "%d", entries[i].score);
         }

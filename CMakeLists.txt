@@ -13,6 +13,8 @@ add_executable(ascii_bomberman
         include/Menu.h
         include/Leaderboard.h
         src/Leaderboard.cpp
+        src/levels.h
+        src/levels.cpp
 )
 
 target_include_directories(ascii_bomberman PRIVATE include)

@@ -18,6 +18,8 @@ add_executable(ascii_bomberman
         cmake-build-debug/Leaderboard.txt
         include/levels.h
         src/levels.cpp
+        include/Player.hpp
+        include/Player.hpp
 )
 
 target_include_directories(ascii_bomberman PRIVATE include)

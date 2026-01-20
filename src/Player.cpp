@@ -5,7 +5,7 @@ Player::Player(int startY, int startX) {
     y = startY;
     lives = 3;
     score = 0;
-    symbol = 'P';
+    symbol = '@';
 }
 
 void Player::move(int dy, int dx) {

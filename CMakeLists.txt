@@ -11,6 +11,8 @@ add_executable(ascii_bomberman
         src/Game.cpp
         src/Menu.cpp
         include/Game.h
+        src/levels.cpp
+        src/levels.h
 )
 
 target_include_directories(ascii_bomberman PRIVATE include)

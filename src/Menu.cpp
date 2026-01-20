@@ -174,7 +174,7 @@ void Menu::draw(const string items[], // Gestisce la stampa delle varie cose
         if (i == selected) attroff(A_REVERSE);
     }
 
-    int i = (int)((nowSec() - startTime) / 7.0); // Ciclo dei sottotitoli
+    int i = (int)((nowSec() - startTime) / 7.0) % 3; // Ciclo dei sottotitoli
     if (i >= countSubt) i = 0;
     mvprintw(hMax - 2, wMax - size(subtitles[i]) - 1 , "%s", subtitles[i].c_str()); // Stampa sottotitoli
     refresh();

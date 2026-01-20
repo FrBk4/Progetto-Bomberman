@@ -13,6 +13,11 @@ void Player::move(int dy, int dx) {
     y += dy;
 }
 
+void Player::setposition(int py, int px) {
+    y = py;
+    x = px;
+}
+
 int Player::getX() const { return x; }
 int Player::getY() const { return y; }
 char Player::getSymbol() const { return symbol; }

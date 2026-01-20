@@ -12,9 +12,9 @@ class Levels {
 public:
     map genlevels();
 
-    WINDOW* enclose_screen(map);
+    WINDOW* enclose_screen(map*);
 
-    int change_level(map, WINDOW*, bool, int);
+    int change_level(map*, WINDOW*, bool, int);
 
     void run();
 };

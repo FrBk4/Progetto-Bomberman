@@ -2,6 +2,7 @@
 #include<ctime>
 #include "levels.h"
 #include<curses.h>
+#include "Player.hpp"
 
 using namespace std;
 
@@ -57,7 +58,7 @@ map Levels::genlevels() {  //questa funzione genera i 5 livelli e ritorna un arr
 //
 
 
-WINDOW* Levels::enclose_screen(map map) {  //questa funzione mostra su schermo la mappa (inizialmente livello 1)
+WINDOW* Levels::enclose_screen(map* map) {  //questa funzione mostra su schermo la mappa (inizialmente livello 1)
 
     int x_offset = getmaxx(stdscr) / 2 - 43;
     if (x_offset < 0) x_offset = 0;
@@ -66,7 +67,7 @@ WINDOW* Levels::enclose_screen(map map) {  //questa funzione mostra su schermo l
 
     for (int y=0; y<23; y++)
         for(int x=0; x<86; x+=2) {
-            mvwprintw(screen, y, x, "%c", map.level[y][x][0]);
+            mvwprintw(screen, y, x, "%c", map->level[y][x][0]);
         }
 
     wborder(screen,  ACS_VLINE, ACS_VLINE,
@@ -84,14 +85,14 @@ WINDOW* Levels::enclose_screen(map map) {  //questa funzione mostra su schermo l
 
 
 
-int Levels::change_level(map map, WINDOW* screen, bool action, int lvl) { //Manuel ti ho lasciato questa funzione da chiamare
+int Levels::change_level(map *map, WINDOW* screen, bool action, int lvl) { //Manuel ti ho lasciato questa funzione da chiamare
                                                                   //quando gestirai l'input del player e il cambio di livello
     if (action && lvl < 4) lvl++;
     else if (!action && lvl>0) lvl--; // ATTENZIONE: si suppone che il primo lvl passato sia 0 dopo la chiamata di enclose_screen
 
     for (int y=0; y<23; y++)
         for(int x=0; x<86; x+=2) {
-            mvwprintw(screen, y, x, "%c", map.level[y][x][lvl]);
+            mvwprintw(screen, y, x, "%c", map->level[y][x][lvl]);
         }
 
     wborder(screen,  ACS_VLINE, ACS_VLINE,
@@ -112,7 +113,9 @@ int Levels::change_level(map map, WINDOW* screen, bool action, int lvl) { //Manu
 void Levels::run() {
     initscr();
     Map = genlevels();
-    WINDOW* screen = enclose_screen(Map);
+    WINDOW* screen = enclose_screen(&Map);
+    keypad(screen, true);
+    halfdelay(2);
     int lvl = 0;
 
     Player p(1, 2);
@@ -122,10 +125,9 @@ void Levels::run() {
     bool ingame = true;
 
     while (ingame == true) {    //input loop
-        keypad(screen, true);
-        halfdelay(2);
 
-        char move = getch();
+
+        int move = wgetch(screen);
 
         bool moved = false;
         switch (move) {
@@ -154,7 +156,7 @@ void Levels::run() {
             case 's':
             case 'S':
             case KEY_DOWN:
-                if (p.getY()<84 && Map.level[p.getY()+1][p.getX()][lvl] != char(219) && Map.level[p.getY()+1][p.getX()][lvl] != char(177)) {
+                if (p.getY()<22 && Map.level[p.getY()+1][p.getX()][lvl] != char(219) && Map.level[p.getY()+1][p.getX()][lvl] != char(177)) {
                     p.move(1, 0);
                     mvwprintw(screen, p.getY(), p.getX(), "%c", p.getSymbol());
                     mvwprintw(screen, p.getY()-1, p.getX(), "%c", Map.level[p.getY()-1][p.getX()][lvl]);
@@ -165,7 +167,7 @@ void Levels::run() {
             case 'd':
             case 'D':
             case KEY_RIGHT:
-                if (p.getY()>1 && Map.level[p.getY()][p.getX()+1][lvl] != char(219) && Map.level[p.getY()][p.getX()+1][lvl] != char(177)) {
+                if (p.getX()<84 && Map.level[p.getY()][p.getX()+1][lvl] != char(219) && Map.level[p.getY()][p.getX()+1][lvl] != char(177)) {
                     p.move(0, 1);
                     mvwprintw(screen, p.getY(), p.getX(), "%c", p.getSymbol());
                     mvwprintw(screen, p.getY(), p.getX()-1, "%c", Map.level[p.getY()][p.getX()-1][lvl]);
@@ -180,12 +182,21 @@ void Levels::run() {
         }
 
         if (moved==true) {
-            if (Map.level[p.getY()][p.getX()]==char(174)) lvl = change_level(Map, screen, 0, lvl); //cambi di livello
-            else if (Map.level[p.getY()][p.getX()]==char(175)) lvl = change_level(Map, screen, 1, lvl);
+            if (Map.level[p.getY()][p.getX()][lvl]==char(174)) {
+                lvl = change_level(&Map, screen, 0, lvl); //cambi di livello
+                p.setposition(1, 2);
+                mvwprintw(screen, p.getY(), p.getX(), "%c", p.getSymbol());
+            }
+            else if (Map.level[p.getY()][p.getX()][lvl]==char(175)) {
+                lvl = change_level(&Map, screen, 1, lvl);
+                p.setposition(1, 2);
+                mvwprintw(screen, p.getY(), p.getX(), "%c", p.getSymbol());
+            }
         }
 
     }
 
+    delwin(screen);
     endwin();
 }
 

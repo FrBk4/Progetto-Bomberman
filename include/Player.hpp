@@ -13,6 +13,7 @@ public:
     Player(int startY, int startX);
 
     void move(int dy, int dx);
+    void setposition(int py, int px);
 
     int getX() const;
     int getY() const;

@@ -118,6 +118,7 @@ int Levels::change_level(map *map, WINDOW* screen, bool action, int lvl) { //Man
 void Levels::run() {
     initscr();
     clear();
+    refresh();
     Map = genlevels();
     WINDOW* screen = enclose_screen(&Map);
     keypad(screen, true);

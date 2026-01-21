@@ -27,5 +27,4 @@ add_executable(ascii_bomberman
 target_include_directories(ascii_bomberman PRIVATE include)
 
 target_link_libraries(ascii_bomberman
-        C:/pdcurses/PDCurses-master/wincon/pdcurses.a
-)
+        C:/pdcurses/PDCurses-master/wincon/pdcurses.a)

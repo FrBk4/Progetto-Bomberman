@@ -9,18 +9,11 @@ using namespace std;
 
 map* Levels::genlevels() {  //questa funzione genera i 5 livelli e ritorna un array che li contiene come matrici 23x86
 
-    struct small_map{    //tipo di mappa iniziale con colonne dimezzate, utile per la generazione ma poco estetico
-        char level[23][43];
-        int index;
-        small_map* previous;
-        small_map* next;
-    };
-
-    small_map* head = nullptr;
-    small_map* prev = nullptr;
+    map* head = nullptr;
+    map* prev = nullptr;
 
     for (int liv = 0; liv < 5; liv++) {  //creazione mura indistruttibili e inizializzazione lista
-        small_map* node = new small_map;
+        map* node = new map;
 
         node->index = liv;
         node->previous = prev;
@@ -45,7 +38,7 @@ map* Levels::genlevels() {  //questa funzione genera i 5 livelli e ritorna un ar
     }
 
     srand(time(nullptr));     //generazione casuale di mura distruttibili (=char(177)) che dipende dal livello
-    for (small_map* node = head; node; node = node->next) {
+    for (map* node = head; node; node = node->next) {
         int prob = (node->index+1)*10;
         for (int y=0; y<23; y++)
             for(int x=0; x<43; x++) {
@@ -58,75 +51,37 @@ map* Levels::genlevels() {  //questa funzione genera i 5 livelli e ritorna un ar
 
     }
 
-    map* true_head = nullptr;
-    map* true_prev = nullptr;
-
-    small_map* node = head;
-    for (int liv = 0; liv < 5; liv++) {  //conversione in mappa grande
-        map* true_node = new map;
-
-        true_node->index = liv;
-        true_node->previous = true_prev;
-        true_node->next = nullptr;
-
-        for (int y = 0; y < 23; y++)
-            for(int x=0; x<86; x+=2) {
-                int small_x = x/2;
-                true_node->level[y][x] = node->level[y][small_x];
-                true_node->level[y][x+1] = node->level[y][small_x];
-            }
-
-
-        if (true_prev)
-            true_prev->next = true_node;
-        else
-            true_head = true_node;   // primo nodo mappa grande
-
-        true_prev = true_node;
-        node = node->next;
+    for (map* node = head; node; node = node->next) {
+        if (node->index !=0) node->level[1][0] = char(174);
+        if (node->index !=4) node->level[21][42] = char(175);
     }
 
-    for (map* node = true_head; node; node = node->next) {
-        if (node->index !=0) node->level[1][1] = char(174);
-        if (node->index !=4) node->level[21][84] = char(175);
-    }
-
-    small_map* tmp;
-    node = head;
-    while (node) {
-        tmp = node;
-        node = node->next;
-        delete tmp;
-    }
-
-    return true_head;
+    return head;
 }
 
 
 //
 
 
-WINDOW* Levels::enclose_screen(map* map) {  //questa funzione mostra su schermo la mappa (inizialmente livello 1)
+WINDOW* Levels::enclose_screen(map* map, int time_left) {  //questa funzione mostra su schermo la mappa (inizialmente livello 1)
 
-    int x_offset = getmaxx(stdscr) / 2 - 43;
+    int x_offset = getmaxx(stdscr) / 2 - 21;
     if (x_offset < 0) x_offset = 0;
 
-    WINDOW * screen = newwin(23, 86, 3, x_offset);
+    WINDOW * screen = newwin(25, 45, 3, x_offset);
 
     for (int y=0; y<23; y++)
-        for(int x=0; x<86; x++) {
-            mvwprintw(screen, y, x, "%c", map->level[y][x]);
+        for(int x=0; x<43; x++) {
+            mvwprintw(screen, y+1, x+1, "%c", map->level[y][x]);
         }
 
-    /*wborder(screen,  ACS_VLINE, ACS_VLINE,
-                 ACS_HLINE, ACS_HLINE,
-                 ACS_ULCORNER, ACS_URCORNER,
-                 ACS_LLCORNER, ACS_LRCORNER);*/
-
-    /*wborder(screen,  186, 186,
+    wborder(screen,  186, 186,
                      205, 205,
                      201, 187,
-                     200, 188);*/
+                     200, 188);
+
+    mvwprintw(screen, 24, 22, "Tempo rimasto: %ds", time_left);
+    mvwprintw(screen, 24, 3, "Punti: %d",0); //si suppone sia 0 per ovvie ragioni a inizio game, meglio che passare un'altra variabile
 
     wrefresh(screen);
 
@@ -138,7 +93,7 @@ WINDOW* Levels::enclose_screen(map* map) {  //questa funzione mostra su schermo 
 
 
 
-map* Levels::change_level(map *head, WINDOW* screen, bool action, int lvl) {
+map* Levels::change_level(map *head, WINDOW* screen, bool action, int lvl, int time_left, int points) {
 
     if (action && lvl < 4) lvl++;
     else if (!action && lvl>0) lvl--; // ATTENZIONE: si suppone che il primo lvl passato sia 0 dopo la chiamata di enclose_screen
@@ -150,14 +105,16 @@ map* Levels::change_level(map *head, WINDOW* screen, bool action, int lvl) {
     if (!node) return head;
 
     for (int y=0; y<23; y++)
-        for(int x=0; x<86; x++) {
-            mvwprintw(screen, y, x, "%c", node->level[y][x]);
+        for(int x=0; x<43; x++) {
+            mvwprintw(screen, y+1, x+1, "%c", node->level[y][x]);
         }
 
-    /*wborder(screen,  ACS_VLINE, ACS_VLINE,
-                 ACS_HLINE, ACS_HLINE,
-                 ACS_ULCORNER, ACS_URCORNER,
-                 ACS_LLCORNER, ACS_LRCORNER);*/
+    wborder(screen,  186, 186,
+                   205, 205,
+                   201, 187,
+                   200, 188);
+    mvwprintw(screen, 24, 22, "Tempo rimasto: %d s", time_left);
+    mvwprintw(screen, 24, 3, "Punti: %d",points);
 
     wrefresh(screen);
 
@@ -173,35 +130,35 @@ void Levels::run() {
     initscr();
     clear();
     refresh();
-    Map = genlevels();
-    WINDOW* screen = enclose_screen(Map);
+    time_t start = time(nullptr); //gestione tempo
+    time_t time_left = 1000;
+    int points = 0;
+    Map = genlevels();  //funzioni di generazione della mappa
+    WINDOW* screen = enclose_screen(Map, (int)time_left);
     map* current_level = Map;
     keypad(screen, true);
     halfdelay(2);
     int lvl = 0;
 
-    Player p(1, 2);
-    mvwprintw(screen, p.getY(), p.getX(), "%c", p.getSymbol());
+    Player p(1, 1);
+    mvwprintw(screen, p.getY()+1, p.getX()+1, "%c", p.getSymbol());
     wrefresh(screen);
 
     bool ingame = true;
-
     while (ingame == true) {    //input loop
-
 
         int move = wgetch(screen);
 
-        bool moved = false;
+        bool scored_point = false;
         switch (move) {
             case 'w':
             case 'W':
             case KEY_UP:
                 if (p.getY()>1 && current_level->level[p.getY()-1][p.getX()] != char(219) && current_level->level[p.getY()-1][p.getX()] != char(177)) {
                     p.move(-1, 0);
-                    mvwprintw(screen, p.getY(), p.getX(), "%c", p.getSymbol());
-                    mvwprintw(screen, p.getY()+1, p.getX(), "%c", current_level->level[p.getY()+1][p.getX()]);
+                    mvwprintw(screen, p.getY()+1, p.getX()+1, "%c", p.getSymbol());
+                    mvwprintw(screen, p.getY()+2, p.getX()+1, "%c", current_level->level[p.getY()+1][p.getX()]);
                 }
-                moved = true;
                 break;
 
             case 'a':
@@ -209,10 +166,9 @@ void Levels::run() {
             case KEY_LEFT:
                 if (/*p.getX()>2 &&*/ current_level->level[p.getY()][p.getX()-1] != char(219) && current_level->level[p.getY()][p.getX()-1] != char(177)) {
                     p.move(0, -1);
-                    mvwprintw(screen, p.getY(), p.getX(), "%c", p.getSymbol());
-                    mvwprintw(screen, p.getY(), p.getX()+1, "%c", current_level->level[p.getY()][p.getX()+1]);
+                    mvwprintw(screen, p.getY()+1, p.getX()+1, "%c", p.getSymbol());
+                    mvwprintw(screen, p.getY()+1, p.getX()+2, "%c", current_level->level[p.getY()][p.getX()+1]);
                 }
-                moved = true;
                 break;
 
             case 's':
@@ -220,10 +176,9 @@ void Levels::run() {
             case KEY_DOWN:
                 if (/*p.getY()<22 &&*/ current_level->level[p.getY()+1][p.getX()] != char(219) && current_level->level[p.getY()+1][p.getX()] != char(177)) {
                     p.move(1, 0);
-                    mvwprintw(screen, p.getY(), p.getX(), "%c", p.getSymbol());
-                    mvwprintw(screen, p.getY()-1, p.getX(), "%c", current_level->level[p.getY()-1][p.getX()] );
+                    mvwprintw(screen, p.getY()+1, p.getX()+1, "%c", p.getSymbol());
+                    mvwprintw(screen, p.getY(), p.getX()+1, "%c", current_level->level[p.getY()-1][p.getX()] );
                 }
-                moved = true;
                 break;
 
             case 'd':
@@ -231,10 +186,9 @@ void Levels::run() {
             case KEY_RIGHT:
                 if (/*p.getX()<84 &&*/ current_level->level[p.getY()][p.getX()+1] != char(219) && current_level->level[p.getY()][p.getX()+1] != char(177)) {
                     p.move(0, 1);
-                    mvwprintw(screen, p.getY(), p.getX(), "%c", p.getSymbol());
-                    mvwprintw(screen, p.getY(), p.getX()-1, "%c", current_level->level[p.getY()][p.getX()-1]);
+                    mvwprintw(screen, p.getY()+1, p.getX()+1, "%c", p.getSymbol());
+                    mvwprintw(screen, p.getY()+1, p.getX(), "%c", current_level->level[p.getY()][p.getX()-1]);
                 }
-                moved = true;
                 break;
 
             case 27: //ESC
@@ -259,17 +213,25 @@ void Levels::run() {
             if (current_level->level[p.getY()][p.getX()]==char(174)) {
                 action = 0;
                 lvl--;
-                p.setposition(21, 83);
+                p.setposition(21, 41);
             }
             else if (current_level->level[p.getY()][p.getX()]==char(175)) {
                 action = 1;
                 lvl++;
-                p.setposition(1, 2);
+                p.setposition(1, 1);
             }
-            current_level = change_level(Map, screen, action, lvl);
-            mvwprintw(screen, p.getY(), p.getX(), "%c", p.getSymbol());
+            current_level = change_level(Map, screen, action, lvl, time_left, points);
+            mvwprintw(screen, p.getY()+1, p.getX()+1, "%c", p.getSymbol());
         }
 
+        time_t finish = time(nullptr);
+        time_left -= (finish - start);
+        if (finish != start) start = finish;
+        if (time_left==1000) mvwprintw(screen, 24, 22, "Tempo rimasto: %ds", (int)time_left);
+        else mvwprintw(screen, 24, 22, "Tempo rimasto: %d ", (int)time_left);
+        if (time_left <= 0) ingame = false;
+        if (scored_point == true) points++;
+        mvwprintw(screen, 24, 3, "Punti: %d",points);
     }
 
     map* tmp;

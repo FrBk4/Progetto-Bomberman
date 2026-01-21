@@ -4,17 +4,20 @@
 #include<curses.h>
 
 struct map{
-    char level[23][86][5];
+    char level[23][86];
+    int index;
+    map* previous;
+    map* next;
 };
 
 class Levels {
-    map Map;
+    map* Map;
 public:
-    map genlevels();
+    map* genlevels();
 
     WINDOW* enclose_screen(map*);
 
-    int change_level(map*, WINDOW*, bool, int);
+    map* change_level(map*, WINDOW*, bool, int);
 
     void run();
 };

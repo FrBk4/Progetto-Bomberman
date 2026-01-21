@@ -7,51 +7,99 @@
 using namespace std;
 
 
-map Levels::genlevels() {  //questa funzione genera i 5 livelli e ritorna un array che li contiene come matrici 23x86
+map* Levels::genlevels() {  //questa funzione genera i 5 livelli e ritorna un array che li contiene come matrici 23x86
 
     struct small_map{    //tipo di mappa iniziale con colonne dimezzate, utile per la generazione ma poco estetico
-        char level[23][43][5];
+        char level[23][43];
+        int index;
+        small_map* previous;
+        small_map* next;
     };
 
-    small_map m;
+    small_map* head = nullptr;
+    small_map* prev = nullptr;
 
-    for (int liv=0; liv<5; liv++)  //struttura di base (muri indistruttibili = char(219) )
-        for (int y=0; y<23; y++)
-            for(int x=0; x<43; x++) {
-                if (x%2==0 && y%2==0) m.level[y][x][liv]=char(219);
-                else m.level[y][x][liv]=' ';
-                if (x==0 || y==0 || x==42 || y== 22) m.level[y][x][liv]=char(219);
+    for (int liv = 0; liv < 5; liv++) {  //creazione mura indistruttibili e inizializzazione lista
+        small_map* node = new small_map;
+
+        node->index = liv;
+        node->previous = prev;
+        node->next = nullptr;
+
+        for (int y = 0; y < 23; y++)
+            for (int x = 0; x < 43; x++) {
+                if (x % 2 == 0 && y % 2 == 0)
+                    node->level[y][x] = char(219);
+                else
+                    node->level[y][x] = ' ';
+                if (x == 0 || y == 0 || x == 42 || y == 22)
+                    node->level[y][x] = char(219);
             }
 
+        if (prev)
+            prev->next = node;
+        else
+            head = node;   // primo nodo
+
+        prev = node;
+    }
 
     srand(time(nullptr));     //generazione casuale di mura distruttibili (=char(177)) che dipende dal livello
-    for (int liv=0; liv<5; liv++) {
-        float prob = (liv+1)*10;
+    for (small_map* node = head; node; node = node->next) {
+        int prob = (node->index+1)*10;
         for (int y=0; y<23; y++)
             for(int x=0; x<43; x++) {
-                if (m.level[y][x][liv]==' ' && (x>5 || y>5)) {
+                if (node->level[y][x]==' ' && (x>5 || y>5)) {
                     int p = rand()%100;
                     if (p<=prob)
-                        m.level[y][x][liv]=char(177);
+                        node->level[y][x]=char(177);
                 }
             }
 
     }
 
-    map true_map;  //vedi definizione struct in levels.h, come small_map ma con x=86, dimensioni vere mostrate
-    for (int liv=0; liv<5; liv++) //conversione da small_map a map
-        for (int y=0; y<23; y++)
+    map* true_head = nullptr;
+    map* true_prev = nullptr;
+
+    small_map* node = head;
+    for (int liv = 0; liv < 5; liv++) {  //conversione in mappa grande
+        map* true_node = new map;
+
+        true_node->index = liv;
+        true_node->previous = true_prev;
+        true_node->next = nullptr;
+
+        for (int y = 0; y < 23; y++)
             for(int x=0; x<86; x+=2) {
                 int small_x = x/2;
-                true_map.level[y][x][liv] = m.level[y][small_x][liv];
-                true_map.level[y][x+1][liv] = m.level[y][small_x][liv];
+                true_node->level[y][x] = node->level[y][small_x];
+                true_node->level[y][x+1] = node->level[y][small_x];
             }
 
-    for (int liv=0; liv<5; liv++) {
-        if (liv !=0) true_map.level[1][1][liv] = char(174);
-        if (liv !=4) true_map.level[21][84][liv] = char(175);
+
+        if (true_prev)
+            true_prev->next = true_node;
+        else
+            true_head = true_node;   // primo nodo mappa grande
+
+        true_prev = true_node;
+        node = node->next;
     }
-    return true_map;
+
+    for (map* node = true_head; node; node = node->next) {
+        if (node->index !=0) node->level[1][1] = char(174);
+        if (node->index !=4) node->level[21][84] = char(175);
+    }
+
+    small_map* tmp;
+    node = head;
+    while (node) {
+        tmp = node;
+        node = node->next;
+        delete tmp;
+    }
+
+    return true_head;
 }
 
 
@@ -67,7 +115,7 @@ WINDOW* Levels::enclose_screen(map* map) {  //questa funzione mostra su schermo 
 
     for (int y=0; y<23; y++)
         for(int x=0; x<86; x++) {
-            mvwprintw(screen, y, x, "%c", map->level[y][x][0]);
+            mvwprintw(screen, y, x, "%c", map->level[y][x]);
         }
 
     /*wborder(screen,  ACS_VLINE, ACS_VLINE,
@@ -90,14 +138,20 @@ WINDOW* Levels::enclose_screen(map* map) {  //questa funzione mostra su schermo 
 
 
 
-int Levels::change_level(map *map, WINDOW* screen, bool action, int lvl) { //Manuel ti ho lasciato questa funzione da chiamare
-                                                                  //quando gestirai l'input del player e il cambio di livello
+map* Levels::change_level(map *head, WINDOW* screen, bool action, int lvl) {
+
     if (action && lvl < 4) lvl++;
     else if (!action && lvl>0) lvl--; // ATTENZIONE: si suppone che il primo lvl passato sia 0 dopo la chiamata di enclose_screen
 
+    map* node = head;
+    while (node && node->index != lvl) {
+        node = node->next;
+    }
+    if (!node) return head;
+
     for (int y=0; y<23; y++)
         for(int x=0; x<86; x++) {
-            mvwprintw(screen, y, x, "%c", map->level[y][x][lvl]);
+            mvwprintw(screen, y, x, "%c", node->level[y][x]);
         }
 
     /*wborder(screen,  ACS_VLINE, ACS_VLINE,
@@ -107,7 +161,7 @@ int Levels::change_level(map *map, WINDOW* screen, bool action, int lvl) { //Man
 
     wrefresh(screen);
 
-    return lvl;
+    return node;
 }
 
 
@@ -120,7 +174,8 @@ void Levels::run() {
     clear();
     refresh();
     Map = genlevels();
-    WINDOW* screen = enclose_screen(&Map);
+    WINDOW* screen = enclose_screen(Map);
+    map* current_level = Map;
     keypad(screen, true);
     halfdelay(2);
     int lvl = 0;
@@ -141,10 +196,10 @@ void Levels::run() {
             case 'w':
             case 'W':
             case KEY_UP:
-                if (p.getY()>1 && Map.level[p.getY()-1][p.getX()][lvl] != char(219) && Map.level[p.getY()-1][p.getX()][lvl] != char(177)) {
+                if (p.getY()>1 && current_level->level[p.getY()-1][p.getX()] != char(219) && current_level->level[p.getY()-1][p.getX()] != char(177)) {
                     p.move(-1, 0);
                     mvwprintw(screen, p.getY(), p.getX(), "%c", p.getSymbol());
-                    mvwprintw(screen, p.getY()+1, p.getX(), "%c", Map.level[p.getY()+1][p.getX()][lvl]);
+                    mvwprintw(screen, p.getY()+1, p.getX(), "%c", current_level->level[p.getY()+1][p.getX()]);
                 }
                 moved = true;
                 break;
@@ -152,10 +207,10 @@ void Levels::run() {
             case 'a':
             case 'A':
             case KEY_LEFT:
-                if (/*p.getX()>2 &&*/ Map.level[p.getY()][p.getX()-1][lvl] != char(219) && Map.level[p.getY()][p.getX()-1][lvl] != char(177)) {
+                if (/*p.getX()>2 &&*/ current_level->level[p.getY()][p.getX()-1] != char(219) && current_level->level[p.getY()][p.getX()-1] != char(177)) {
                     p.move(0, -1);
                     mvwprintw(screen, p.getY(), p.getX(), "%c", p.getSymbol());
-                    mvwprintw(screen, p.getY(), p.getX()+1, "%c", Map.level[p.getY()][p.getX()+1][lvl]);
+                    mvwprintw(screen, p.getY(), p.getX()+1, "%c", current_level->level[p.getY()][p.getX()+1]);
                 }
                 moved = true;
                 break;
@@ -163,10 +218,10 @@ void Levels::run() {
             case 's':
             case 'S':
             case KEY_DOWN:
-                if (/*p.getY()<22 &&*/ Map.level[p.getY()+1][p.getX()][lvl] != char(219) && Map.level[p.getY()+1][p.getX()][lvl] != char(177)) {
+                if (/*p.getY()<22 &&*/ current_level->level[p.getY()+1][p.getX()] != char(219) && current_level->level[p.getY()+1][p.getX()] != char(177)) {
                     p.move(1, 0);
                     mvwprintw(screen, p.getY(), p.getX(), "%c", p.getSymbol());
-                    mvwprintw(screen, p.getY()-1, p.getX(), "%c", Map.level[p.getY()-1][p.getX()][lvl]);
+                    mvwprintw(screen, p.getY()-1, p.getX(), "%c", current_level->level[p.getY()-1][p.getX()] );
                 }
                 moved = true;
                 break;
@@ -174,10 +229,10 @@ void Levels::run() {
             case 'd':
             case 'D':
             case KEY_RIGHT:
-                if (/*p.getX()<84 &&*/ Map.level[p.getY()][p.getX()+1][lvl] != char(219) && Map.level[p.getY()][p.getX()+1][lvl] != char(177)) {
+                if (/*p.getX()<84 &&*/ current_level->level[p.getY()][p.getX()+1] != char(219) && current_level->level[p.getY()][p.getX()+1] != char(177)) {
                     p.move(0, 1);
                     mvwprintw(screen, p.getY(), p.getX(), "%c", p.getSymbol());
-                    mvwprintw(screen, p.getY(), p.getX()-1, "%c", Map.level[p.getY()][p.getX()-1][lvl]);
+                    mvwprintw(screen, p.getY(), p.getX()-1, "%c", current_level->level[p.getY()][p.getX()-1]);
                 }
                 moved = true;
                 break;
@@ -199,19 +254,29 @@ void Levels::run() {
                 refresh();*/
         }
 
-        if (moved==true) {
-            if (Map.level[p.getY()][p.getX()][lvl]==char(174)) {
-                lvl = change_level(&Map, screen, 0, lvl); //cambi di livello
+        if (current_level->level[p.getY()][p.getX()]==char(174) || current_level->level[p.getY()][p.getX()]==char(175)) {
+            bool action;
+            if (current_level->level[p.getY()][p.getX()]==char(174)) {
+                action = 0;
+                lvl--;
                 p.setposition(21, 83);
-                mvwprintw(screen, p.getY(), p.getX(), "%c", p.getSymbol());
             }
-            else if (Map.level[p.getY()][p.getX()][lvl]==char(175)) {
-                lvl = change_level(&Map, screen, 1, lvl);
+            else if (current_level->level[p.getY()][p.getX()]==char(175)) {
+                action = 1;
+                lvl++;
                 p.setposition(1, 2);
-                mvwprintw(screen, p.getY(), p.getX(), "%c", p.getSymbol());
             }
+            current_level = change_level(Map, screen, action, lvl);
+            mvwprintw(screen, p.getY(), p.getX(), "%c", p.getSymbol());
         }
 
+    }
+
+    map* tmp;
+    while (Map) {
+        tmp = Map;
+        Map = Map->next;
+        delete tmp;
     }
 
     delwin(screen);

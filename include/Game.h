@@ -5,6 +5,7 @@
 
 #include "Menu.h"
 #include "leaderboard.h"
+#include "Levels.h"
 
 class Game {
 public:
@@ -16,4 +17,5 @@ private:
 
     Menu menu_;
     Leaderboard lb_;
+    Levels levels_;
 };

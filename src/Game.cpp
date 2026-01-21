@@ -45,9 +45,7 @@ void Game::run() { // Gestisce il gameloop
         clear();
         if (choice == 0) { // Da qua bisogna poi far partire la mappa e il gioco
             napms(200); // Breve delay per far lasciare di più a schermo il titolo distrutto
-            mvprintw(1, 2, "Hai scelto: Nuova partita");
-            mvprintw(3, 2, "Premi un tasto per tornare al menu...");
-            getch();
+            levels_.run();
         } else if (choice == 1) {
             lb_.run();
         }

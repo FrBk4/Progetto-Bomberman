@@ -16,10 +16,12 @@ add_executable(ascii_bomberman
         include/Score.h
         src/Score.cpp
         cmake-build-debug/Leaderboard.txt
-        include/levels.h
-        src/levels.cpp
+        include/Levels.h
+        src/Levels.cpp
         include/Player.hpp
-        include/Player.hpp
+        include/Enemy.hpp
+        src/Enemy.cpp
+        src/Player.cpp
 )
 
 target_include_directories(ascii_bomberman PRIVATE include)

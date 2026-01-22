@@ -7,7 +7,7 @@
 using namespace std;
 
 
-map* Levels::genlevels() {  //questa funzione genera i 5 livelli e ritorna un array che li contiene come matrici 23x86
+map* Levels::genlevels() {  //questa funzione genera i 5 livelli e ritorna un array che li contiene come matrici 23x43
 
     map* head = nullptr;
     map* prev = nullptr;
@@ -80,7 +80,7 @@ WINDOW* Levels::enclose_screen(map* map, int time_left) {  //questa funzione mos
                      201, 187,
                      200, 188);
 
-    mvwprintw(screen, 24, 22, "Tempo rimasto: %ds", time_left);
+    mvwprintw(screen, 24, 29, "Tempo: %ds", time_left);
     mvwprintw(screen, 24, 3, "Punti: %d",0); //si suppone sia 0 per ovvie ragioni a inizio game, meglio che passare un'altra variabile
 
     wrefresh(screen);
@@ -113,7 +113,7 @@ map* Levels::change_level(map *head, WINDOW* screen, bool action, int lvl, int t
                    205, 205,
                    201, 187,
                    200, 188);
-    mvwprintw(screen, 24, 22, "Tempo rimasto: %d s", time_left);
+    mvwprintw(screen, 24, 29, "Tempo: %d s", time_left);
     mvwprintw(screen, 24, 3, "Punti: %d",points);
 
     wrefresh(screen);
@@ -196,17 +196,22 @@ void Levels::run() {
                 ingame = false;
                 break;
 
-            /*case 'p':
+            case 'p':
             case 'P':
-                int x_offset = getmaxx(stdscr) / 2 - 43;
+                int x_offset = getmaxx(stdscr) / 2 - 21;
                 if (x_offset < 0) x_offset = 0;
-                WINDOW* controls = newwin(23, 86, 3, x_offset);
+                WINDOW* controls = newwin(25, 45, 3, x_offset);
                 mvwprintw(controls,1,1, "> Comandi del gioco: < \n\n");
-                wprintw(controls, " > WASD / keypad: movimento \n> E: piazza mina \n> ESC: esci \n\n Premi P o ESC per uscire.");
+                wprintw(controls, " > WASD / keypad: movimento \n > E: piazza mina \n > ESC: esci \n\n Premi P o ESC per tornare al gioco.");
                 box(controls, 0, 0);
-                do {wrefresh(controls);}while(getch() != 27 && getch()!= 'P');
+                char c;
+                do {
+                    c = wgetch(controls);
+                }while(c != 27 && c != 'P'&& c!= 'p');
                 delwin(controls);
-                refresh();*/
+                wrefresh(screen);
+                screen=enclose_screen(current_level, (int)time_left);
+                mvwprintw(screen, p.getY()+1, p.getX()+1, "%c", p.getSymbol());
         }
 
         if (current_level->level[p.getY()][p.getX()]==char(174) || current_level->level[p.getY()][p.getX()]==char(175)) {
@@ -228,8 +233,8 @@ void Levels::run() {
         time_t finish = time(nullptr);
         time_left -= (finish - start);
         if (finish != start) start = finish;
-        if (time_left==1000) mvwprintw(screen, 24, 22, "Tempo rimasto: %ds", (int)time_left);
-        else mvwprintw(screen, 24, 22, "Tempo rimasto: %d ", (int)time_left);
+        if (time_left==1000) mvwprintw(screen, 24, 29, "Tempo: %ds", (int)time_left);
+        else mvwprintw(screen, 24, 29, "Tempo: %d ", (int)time_left);
         if (time_left <= 0) ingame = false;
         if (scored_point == true) points++;
         mvwprintw(screen, 24, 3, "Punti: %d",points);

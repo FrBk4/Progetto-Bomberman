@@ -129,6 +129,7 @@ map* Levels::change_level(map *head, WINDOW* screen, bool action, int lvl, int t
 void Levels::run() {
     initscr();
     clear();
+    box(stdscr, 0, 0);
     refresh();
     time_t start = time(nullptr); //gestione tempo
     time_t time_left = 1000;

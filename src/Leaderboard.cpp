@@ -146,7 +146,7 @@ void Leaderboard::drawDynamic() { // Disegna ciò che cambia ogni frame (pulsazi
         int maxRows = boardH - 7; // spazio disponibile
         if (maxRows < 0) maxRows = 0;
 
-        for (int i = 0; i < 10 && i < maxRows; i++) {
+        for (int i = 0; i < 10 && i < maxRows; i++) { // Stampa dei giocatori della classifica
             mvwprintw(boardWin, row + i, 2, "%d) %s", i + 1, entries[i].name);
             mvwprintw(boardWin, row + i, boardW - 10, "%d", entries[i].score);
         }

@@ -8,6 +8,7 @@ private:
     int lives;
     int score;
     char symbol;
+    int bombradius;
 
 public:
     Player(int startY, int startX);
@@ -24,6 +25,10 @@ public:
 
     void loseLife();
     int getLives() const;
+    int setLives(int l);
+
+    int getradius();
+    void setradius(int radius);
 };
 
 #endif

@@ -37,3 +37,15 @@ void Player::loseLife() {
 int Player::getLives() const {
     return lives;
 }
+
+int Player::setLives(int l) {
+    lives = l;
+}
+
+int Player::getradius() {
+    return bombradius;
+}
+
+void Player::setradius(int radius) {
+    bombradius = radius;
+}

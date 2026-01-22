@@ -22,6 +22,8 @@ add_executable(ascii_bomberman
         include/Enemy.hpp
         src/Enemy.cpp
         src/Player.cpp
+        include/items.h
+        src/items.cpp
 )
 
 target_include_directories(ascii_bomberman PRIVATE include)

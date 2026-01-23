@@ -15,7 +15,7 @@ class Levels {
 public:
     map* genlevels();
 
-    WINDOW* enclose_screen(map*, int);
+    WINDOW* enclose_screen(map*, int, int);
 
     map* change_level(map*, WINDOW*, bool, int, int, int);
 

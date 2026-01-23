@@ -36,7 +36,7 @@ char Itemlist :: spawnrate(int prob) { //funzione che genera item casualmente su
     int q = rand() % 100;
 
     if (q<prob){
-        int p = rand() % 1000;
+       int p = rand() % 1000;
 
         if (p<800)
             return 'B';

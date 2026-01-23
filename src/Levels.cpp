@@ -79,7 +79,7 @@ map* Levels::genlevels() {  //questa funzione genera i 5 livelli e ritorna un ar
 //
 
 
-WINDOW* Levels::enclose_screen(map* map, int time_left) {  //questa funzione mostra su schermo la mappa (inizialmente livello 1)
+WINDOW* Levels::enclose_screen(map* map, int time_left, int lvl) {  //questa funzione mostra su schermo la mappa (inizialmente livello 1)
 
     int x_offset = getmaxx(stdscr) / 2 - 21;
     if (x_offset < 0) x_offset = 0;
@@ -101,6 +101,7 @@ WINDOW* Levels::enclose_screen(map* map, int time_left) {  //questa funzione mos
     mvwprintw(screen, 24, 29, "Tempo: %ds", time_left);
     mvwprintw(screen, 24, 3, "Punti: %d",p.getScore());
     mvwprintw(screen, 24, 16, "Vite: %d",p.getLives());
+    mvwprintw(screen, 0, 17, "Livello: %d", lvl+1);
 
     wrefresh(screen);
 
@@ -113,9 +114,6 @@ WINDOW* Levels::enclose_screen(map* map, int time_left) {  //questa funzione mos
 
 
 map* Levels::change_level(map *head, WINDOW* screen, bool action, int lvl, int time_left, int lives) {
-
-    if (action && lvl < 4) lvl++;
-    else if (!action && lvl>0) lvl--; // ATTENZIONE: si suppone che il primo lvl passato sia 0 dopo la chiamata di enclose_screen
 
     map* node = head;
     while (node && node->index != lvl) {
@@ -137,6 +135,7 @@ map* Levels::change_level(map *head, WINDOW* screen, bool action, int lvl, int t
     mvwprintw(screen, 24, 29, "Tempo: %d s", time_left);
     mvwprintw(screen, 24, 3, "Punti: %d",p.getScore());
     mvwprintw(screen, 24, 16, "Vite: %d", lives);
+    mvwprintw(screen, 0, 17, "Livello: %d", lvl+1);
 
     wrefresh(screen);
 
@@ -156,7 +155,8 @@ void Levels::run() {
     time_t time_left = 1000;
     time_t start_effect = 0;
     Map = genlevels();  //funzioni di generazione della mappa
-    WINDOW* screen = enclose_screen(Map, (int)time_left);
+    p.setposition(1,1);
+    WINDOW* screen = enclose_screen(Map, (int)time_left, 0);
     map* current_level = Map;
     keypad(screen, true); //impostazioni dell'input
     halfdelay(2);
@@ -233,7 +233,7 @@ void Levels::run() {
                 }while(c != 27 && c != 'P'&& c!= 'p');
                 delwin(controls);
                 wrefresh(screen);
-                screen=enclose_screen(current_level, (int)time_left);
+                screen=enclose_screen(current_level, (int)time_left, lvl);
                 mvwprintw(screen, p.getY()+1, p.getX()+1, "%c", p.getSymbol());
         } //fine input loop
 
@@ -284,6 +284,10 @@ void Levels::run() {
         if (p.getLives() <= 0) ingame = false;
         mvwprintw(screen, 24, 16, "Vite: %d", p.getLives());
     }
+    clear();
+    refresh();
+
+
 
     map* tmp;
     while (Map) {

@@ -1,4 +1,3 @@
-#ifndef PLAYER_HPP
 #define PLAYER_HPP
 
 class Player {
@@ -16,19 +15,14 @@ public:
     void move(int dy, int dx);
     void setposition(int py, int px);
 
-    int getX() const;
-    int getY() const;
-    char getSymbol() const;
-
-    void addScore(int value);
-    int getScore() const;
-
-    void loseLife();
-    int getLives() const;
-    int setLives(int l);
-
+    int getX();
+    int getY();
+    int getLives();
+    int getScore();
+    char getSymbol();
     int getradius();
+
+    void setLives(int l);
+    void addScore(int s);
     void setradius(int radius);
 };
-
-#endif

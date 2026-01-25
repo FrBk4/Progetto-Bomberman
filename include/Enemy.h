@@ -1,4 +1,3 @@
-#ifndef ENEMY_HPP
 #define ENEMY_HPP
 
 class Enemy {
@@ -15,10 +14,8 @@ public:
     void moveRandom();
     void kill();
 
-    int getX() const;
-    int getY() const;
-    char getSymbol() const;
-    bool isAlive() const;
+    int getX();
+    int getY();
+    char getSymbol();
+    bool isAlive();
 };
-
-#endif

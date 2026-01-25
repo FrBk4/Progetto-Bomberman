@@ -1,4 +1,4 @@
-#include "../include/Player.hpp"
+#include "../include/Player.h"
 
 Player::Player(int startY, int startX) {
     x = startX;
@@ -6,6 +6,7 @@ Player::Player(int startY, int startX) {
     lives = 3;
     score = 0;
     symbol = '@';
+    bombradius = 1;
 }
 
 void Player::move(int dy, int dx) {
@@ -18,32 +19,36 @@ void Player::setposition(int py, int px) {
     x = px;
 }
 
-int Player::getX() const { return x; }
-int Player::getY() const { return y; }
-char Player::getSymbol() const { return symbol; }
-
-void Player::addScore(int value) {
-    score += value;
+int Player::getX() {
+    return x;
 }
 
-int Player::getScore() const {
-    return score;
+int Player::getY() {
+    return y;
 }
 
-void Player::loseLife() {
-    lives--;
-}
-
-int Player::getLives() const {
+int Player::getLives() {
     return lives;
 }
 
-int Player::setLives(int l) {
-    lives = l;
+int Player::getScore() {
+    return score;
+}
+
+char Player::getSymbol() {
+    return symbol;
 }
 
 int Player::getradius() {
     return bombradius;
+}
+
+void Player::setLives(int l) {
+    lives = l;
+}
+
+void Player::addScore(int s) {
+    score += s;
 }
 
 void Player::setradius(int radius) {

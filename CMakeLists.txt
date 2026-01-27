@@ -18,8 +18,8 @@ add_executable(ascii_bomberman
         cmake-build-debug/Leaderboard.txt
         include/Levels.h
         src/Levels.cpp
-        include/Player.hpp
-        include/Enemy.hpp
+        include/Player.h
+        include/Enemy.h
         src/Enemy.cpp
         src/Player.cpp
         include/items.h

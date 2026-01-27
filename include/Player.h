@@ -1,3 +1,4 @@
+#ifndef PLAYER_HPP
 #define PLAYER_HPP
 
 class Player {
@@ -26,3 +27,5 @@ public:
     void addScore(int s);
     void setradius(int radius);
 };
+
+#endif

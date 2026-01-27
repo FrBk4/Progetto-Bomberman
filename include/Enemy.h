@@ -1,3 +1,4 @@
+#ifndef ENEMY_HPP
 #define ENEMY_HPP
 
 class Enemy {
@@ -19,3 +20,5 @@ public:
     char getSymbol();
     bool isAlive();
 };
+
+#endif

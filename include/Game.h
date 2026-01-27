@@ -1,10 +1,8 @@
 #ifndef ASCII_BOMBERMAN_GAME_H
 #define ASCII_BOMBERMAN_GAME_H
 
-#endif //ASCII_BOMBERMAN_GAME_H
-
 #include "Menu.h"
-#include "leaderboard.h"
+#include "Leaderboard.h"
 #include "Levels.h"
 
 class Game {
@@ -19,3 +17,5 @@ private:
     Leaderboard lb_;
     Levels levels_;
 };
+
+#endif

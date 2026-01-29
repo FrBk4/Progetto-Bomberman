@@ -1,9 +1,11 @@
-#include<iostream>
-#include<ctime>
-#include "levels.h"
-#include<curses.h>
-#include "Player.hpp"
-#include "items.h"
+#include <iostream>
+#include <ctime>
+#include <string>
+#include <curses.h>
+#include "../include/Levels.hpp"
+#include "../include/Player.hpp"
+#include "../include/Items.hpp"
+#include "../include/Score.hpp"
 
 #define DESTR_RATIO (10+(node->index*4))
 #define ITEMS_RATIO (node->index+2)
@@ -12,6 +14,10 @@ using namespace std;
 
 Itemlist items;
 Player p(1, 1);
+
+bool inBounds(int y, int x) {
+    return y >= 0 && y < 22 && x >= 0 && x < 42;
+}
 
 map* Levels::genlevels() {  //questa funzione genera i 5 livelli e ritorna un array che li contiene come matrici 23x43
 
@@ -143,8 +149,7 @@ map* Levels::change_level(map *head, WINDOW* screen, bool action, int lvl, int t
 }
 
 
-//
-
+//----------------------------------------------------------------------------------------------------------------------
 
 
 void Levels::run() {

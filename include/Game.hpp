@@ -1,9 +1,9 @@
 #ifndef ASCII_BOMBERMAN_GAME_H
 #define ASCII_BOMBERMAN_GAME_H
 
-#include "Menu.h"
-#include "Leaderboard.h"
-#include "Levels.h"
+#include "Menu.hpp"
+#include "Leaderboard.hpp"
+#include "Levels.hpp"
 
 class Game {
 public:

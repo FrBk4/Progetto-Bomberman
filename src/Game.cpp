@@ -1,4 +1,4 @@
-#include "Game.h"
+#include "../include/Game.hpp"
 #include <curses.h>
 #include <string>
 using namespace std;

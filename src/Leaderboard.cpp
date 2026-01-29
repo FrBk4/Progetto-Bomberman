@@ -1,4 +1,4 @@
-#include "Leaderboard.h"
+#include "../include/Leaderboard.hpp"
 #include <curses.h>
 #include <cstring>
 #include <ctime>

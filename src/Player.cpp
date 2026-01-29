@@ -1,56 +1,44 @@
-#include "../include/Player.h"
+#include "../include/Player.hpp"
 
-Player::Player(int startY, int startX) {
-    x = startX;
-    y = startY;
-    lives = 3;
-    score = 0;
-    symbol = '@';
-    bombradius = 1;
+Player::Player(int startX, int startY)
+    : x(startX), y(startY), lives(3) {}
+
+int Player::getX() const {
+    return x;
 }
 
-void Player::move(int dy, int dx) {
+int Player::getY() const {
+    return y;
+}
+
+int Player::getLives() const {
+    return lives;
+}
+
+void Player::move(int dx, int dy) {
     x += dx;
     y += dy;
 }
 
-void Player::setposition(int py, int px) {
-    y = py;
-    x = px;
+void Player::loseLife() {
+    if (lives > 0) {
+        lives--;
+    }
 }
 
-int Player::getX() {
-    return x;
+void Player::setPosition(int y, int x) {
+    this->y = y;
+    this->x = x;
 }
 
-int Player::getY() {
-    return y;
-}
-
-int Player::getLives() {
-    return lives;
-}
-
-int Player::getScore() {
+int Player::getScore() const {
     return score;
-}
-
-char Player::getSymbol() {
-    return symbol;
-}
-
-int Player::getradius() {
-    return bombradius;
-}
-
-void Player::setLives(int l) {
-    lives = l;
 }
 
 void Player::addScore(int s) {
     score += s;
 }
 
-void Player::setradius(int radius) {
-    bombradius = radius;
+void Player::setLives(int l) {
+    lives = l;
 }

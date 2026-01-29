@@ -1,8 +1,8 @@
-#include<iostream>
-#include<ctime>
-#include "levels.h"
-#include<curses.h>
-#include "items.h"
+#include <iostream>
+#include <ctime>
+#include <curses.h>
+#include "../include/Levels.hpp"
+#include "../include/Items.hpp"
 
 using namespace std;
 

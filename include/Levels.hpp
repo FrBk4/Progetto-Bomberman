@@ -1,7 +1,7 @@
 #ifndef LEVELS_H
 #define LEVELS_H
 
-#include<curses.h>
+#include <curses.h>
 
 struct map{
     char level[23][43];

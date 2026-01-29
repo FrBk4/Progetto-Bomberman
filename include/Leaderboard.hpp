@@ -13,7 +13,6 @@ protected:
 
     int lastH = -1;
     int lastW = -1;
-
     int boardH = 0;
     int boardW = 0;
     int boardY = 0;

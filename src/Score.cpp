@@ -1,4 +1,4 @@
-#include "Score.h"
+#include "../include/Score.hpp"
 #include <fstream>
 
 using namespace std;

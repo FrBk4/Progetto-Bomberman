@@ -181,16 +181,16 @@ void Levels::run() {
     int playerTick = 0;
     int enemyNTick = 0;
     int enemySTick = 0;
-    int blinkTick = 0;
-    const int blink_delay = 100;
     const int player_tick_delay = 1; // più basso = più veloce
     const int enemy_n_delay = 1000;     // lento
     const int enemy_s_delay = 300;     // veloce
-
+    
     // invincibilità
     bool invincible = false;
     int blinkCounter = 0;
     const int maxBlink = 16;
+    const int blink_delay = 100;
+    int blinkTick = 0;
 
     // player assoluto
     char playerChar = '@';
@@ -263,10 +263,24 @@ void Levels::run() {
             int ny = p.getY() + dy;
 
             if (inBounds(ny, nx)) {
-                char next = current_level->level[ny][nx];
-                if (next != '#' && next != '+')
-                    p.move(dx, dy);
+            char next = current_level->level[ny][nx];
+
+            // player sul nemico
+            if ((next == 'N' || next == 'S')) {
+                if (!invincible) {
+                    p.loseLife();
+                    invincible = true;
+                    blinkCounter = 0;
+                    blinkTick = 0;
+                }
+                // il player non entra nella cella
             }
+            // movimento normale
+            else if (next != '#' && next != '+') {
+                p.move(dx, dy);
+            }
+        }
+
 
             playerTick = 0;
         }
@@ -337,6 +351,21 @@ void Levels::run() {
                 }
             }
 
+            // danno esplosione player
+            if (!invincible) {
+                for (int i = 0; i < explosionCount; i++) {
+                    if (explosionX[i] == p.getX() &&
+                        explosionY[i] == p.getY()) {
+                        
+                        p.loseLife();
+                        invincible = true;
+                        blinkCounter = 0;
+                        blinkTick = 0;
+                        break;
+                    }
+                }
+            }
+
             explosionVisible = true;
             explosionTime = time(nullptr);
             bombPlaced = false;
@@ -346,37 +375,42 @@ void Levels::run() {
         for (int y = 1; y < 22; y++) {
             for (int x = 1; x < 42; x++) {
 
-            char enemy = current_level->level[y][x];
-            if (enemy != 'N' && enemy != 'S')
-            continue;
-            
-            if (enemy == 'N' && enemyNTick < enemy_n_delay) continue;
-            if (enemy == 'S' && enemySTick < enemy_s_delay) continue;
-            
-            int dir = rand() % 4;
-            int nx = x, ny = y;
-            
-            if (dir == 0) ny--;
-            if (dir == 1) ny++;
-            if (dir == 2) nx--;
-            if (dir == 3) nx++;
-            
-            if (!inBounds(ny, nx))
-            continue;
-            
-            if (nx == p.getX() && ny == p.getY() && !invincible) {
-                p.loseLife();
-                invincible = true;
-                blinkCounter = 0;
+                char enemy = current_level->level[y][x];
+                if (enemy != 'N' && enemy != 'S')
                 continue;
-            }
-            
-            if (current_level->level[ny][nx] == ' ') {
-                current_level->level[ny][nx] = enemy;
-                current_level->level[y][x] = ' ';
+                
+                if (enemy == 'N' && enemyNTick < enemy_n_delay) continue;
+                if (enemy == 'S' && enemySTick < enemy_s_delay) continue;
+                
+                int dir = rand() % 4;
+                int nx = x, ny = y;
+                
+                if (dir == 0) ny--;
+                if (dir == 1) ny++;
+                if (dir == 2) nx--;
+                if (dir == 3) nx++;
+                
+                if (!inBounds(ny, nx))
+                continue;
+                
+                // se il nemico tenta di entrare nel player
+                if (nx == p.getX() && ny == p.getY()) {
+                    if (!invincible) {
+                        p.loseLife();
+                        invincible = true;
+                        blinkCounter = 0;
+                        blinkTick = 0;
+                    }
+                    continue; // il nemico NON si muove
+                }
+
+                // movimento normale
+                if (current_level->level[ny][nx] == ' ') {
+                    current_level->level[ny][nx] = enemy;
+                    current_level->level[y][x] = ' ';
+                }
             }
         }
-    }
     
     if (enemyNTick >= enemy_n_delay) enemyNTick = 0;
     if (enemySTick >= enemy_s_delay) enemySTick = 0;

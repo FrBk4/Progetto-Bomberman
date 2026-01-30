@@ -3,6 +3,7 @@
 #include <curses.h>
 #include "../include/Levels.hpp"
 #include "../include/Player.hpp"
+#include "../include/Enemy.hpp"
 #include "../include/Items.hpp"
 #include "../include/Score.hpp"
 
@@ -172,6 +173,11 @@ void Levels::run() {
     clear();
     box(stdscr, 0, 0);
     refresh();
+    initscr();
+    start_color();
+    use_default_colors();
+    init_pair(1, COLOR_RED, COLOR_BLACK);
+    init_pair(2, COLOR_CYAN, COLOR_BLACK);
 
     time_t start = time(nullptr); //gestione tempo
     time_t time_left = 1000;
@@ -204,6 +210,8 @@ void Levels::run() {
     
     // input loop
     bool ingame = true;
+    bool levelCleared[5] = { false, false, false, false, false };
+    bool victory = false;
     int lvl = current_level->index;
 
     // bomba
@@ -299,7 +307,9 @@ void Levels::run() {
             p.setLives(lives);
             bombRadius = radius;
             current_level->level[p.getY()][p.getX()] = ' ';
+            wattron(screen, COLOR_PAIR(2));
             mvwprintw(screen, p.getY()+1, p.getX()+1, "%c", playerChar);
+            wattroff(screen, COLOR_PAIR(2));
         }
 
 
@@ -341,6 +351,12 @@ void Levels::run() {
 
                     char &c = current_level->level[ny][nx];
                     if (c == '#') break;
+
+                    if (c == '+') {
+                        c = ' ';
+                        p.addScore(20);
+                        break;
+                    }
 
                     if (explosionCount < 32) {
                         explosionX[explosionCount] = nx;
@@ -423,7 +439,37 @@ void Levels::run() {
     
     if (enemyNTick >= enemy_n_delay) enemyNTick = 0;
     if (enemySTick >= enemy_s_delay) enemySTick = 0;
-    
+
+    int idx = current_level->index;
+
+    // se il livello non è ancora stato clearato
+    if (!levelCleared[idx] && countEnemies(current_level) == 0) {
+
+        levelCleared[idx] = true;   // questo livello è clear
+        p.setLives(3);
+
+        // avanti se non ultimo livello
+        if (idx < 4) {
+            current_level = current_level->next;
+            lvl = current_level->index;
+            p.setPosition(1, 2);
+        }
+        bool allCleared = true;
+        for (int i = 0; i < 5; i++) {
+            if (!levelCleared[i]) {
+                allCleared = false;
+                break;
+            }
+        }
+
+        if (allCleared) {
+            victory = true;
+            ingame = false;
+            break;
+        }
+
+    }
+
         // invincibilità
         if (invincible) {
             blinkTick++;
@@ -448,7 +494,9 @@ void Levels::run() {
         mvwprintw(screen, 24, 16, "Vite: %d",  p.getLives());
         mvwprintw(screen, 24, 29, "Tempo: %d", (int)time_left);
         mvwprintw(screen, 0, 2, "Livello: %d", lvl + 1);
-
+        if (levelCleared[lvl]) {
+            mvwprintw(screen, 0, 14, "[CLEAR]");
+        }
 
         for (int y = 0; y < 22; y++)
             for (int x = 0; x < 42; x++)
@@ -456,11 +504,15 @@ void Levels::run() {
                           current_level->level[y][x]);
 
         if (explosionVisible) {
-            for (int i = 0; i < explosionCount; i++)
+            wattron(screen, COLOR_PAIR(1));   // colore acceso
+
+            for (int i = 0; i < explosionCount; i++) {
                 mvwprintw(screen,
                           explosionY[i] + 1,
                           explosionX[i] + 1,
                           "*");
+            }
+            wattroff(screen, COLOR_PAIR(1));  // colore spento
 
             if (time(nullptr) - explosionTime >= 1)
                 explosionVisible = false;
@@ -469,14 +521,15 @@ void Levels::run() {
         if (invincible && (blinkCounter % 2 == 0))
             playerChar = ' '; else playerChar = '@';
 
-        mvwprintw(screen,
-                  p.getY() + 1,
-                  p.getX() + 1,
-                  "%c", playerChar);
+        wattron(screen, COLOR_PAIR(2));
+        mvwprintw(screen, p.getY() + 1, p.getX() + 1, "%c", playerChar);
+        wattroff(screen, COLOR_PAIR(2));
 
         time_t now = time(nullptr);
         time_left -= (now - start);
         start = now;
+
+        if (time_left < 0) time_left = 0;
 
         if (p.getLives() <= 0 || time_left <= 0)
             ingame = false;
@@ -484,36 +537,48 @@ void Levels::run() {
         wrefresh(screen);
     }
 
-    // GAME OVER
+    // bonus tempo se vittoria
+    if (victory && time_left > 0) {
+        p.addScore((int)time_left);
+    }
+
+    // reset input per inserimento nome
     echo();
     nocbreak();
     nodelay(screen, false);
 
+    // schermata finale
+    clear();
+
+    if (victory) {
+        mvprintw(10, 18, "YOU WIN!");
+        mvprintw(12, 10, "Hai completato tutti i livelli!");
+    } else {
+        mvprintw(10, 18, "GAME OVER");
+    }
+
+    refresh();
+
+    // prompt nome (COMUNE a entrambi i casi)
     char name[32];
     WINDOW* prompt = newwin(5, 40,
         getmaxy(stdscr)/2 - 2,
         getmaxx(stdscr)/2 - 20);
 
     box(prompt, 0, 0);
-    mvwprintw(prompt, 1, 2, "Game Over!");
-    mvwprintw(prompt, 2, 2, "Inserisci il tuo nome:");
+    mvwprintw(prompt, 1, 2, "Inserisci il tuo nome:");
     wrefresh(prompt);
 
     wgetnstr(prompt, name, 31);
     Score::saveScore("Leaderboard.txt", name, p.getScore());
 
-    
     delwin(prompt);
-    noecho();
-    cbreak();
 
+    // pulizia finale
     clear();
     refresh();
 
-
-    clear();
-    refresh();
-
+    // libera mappe
     map* tmp;
     while (Map) {
         tmp = Map;
@@ -522,4 +587,5 @@ void Levels::run() {
     }
 
     delwin(screen);
+
 }

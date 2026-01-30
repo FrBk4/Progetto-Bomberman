@@ -85,6 +85,9 @@ map* Levels::genlevels() {  //questa funzione genera i 5 livelli e ritorna un ar
 
         for (int y = 1; y < 22 && placed < 5; y++) {
             for (int x = 1; x < 42 && placed < 5; x++) {
+                
+                if (x <= 5 && y <= 5) // safe zone
+                    continue;
 
                 if (node->level[y][x] == ' ') {
                     int r = rand() % 100;
@@ -202,6 +205,8 @@ void Levels::run() {
     Map = genlevels();  //funzioni di generazione della mappa
     map* current_level = Map;
 
+    p.setLives(3);
+    p.resetScore();
     p.setPosition(1,1);
 
     WINDOW* screen = enclose_screen(Map, (int)time_left, 0);
@@ -494,7 +499,7 @@ void Levels::run() {
         mvwprintw(screen, 24, 16, "Vite: %d",  p.getLives());
         mvwprintw(screen, 24, 29, "Tempo: %d", (int)time_left);
         mvwprintw(screen, 0, 2, "Livello: %d", lvl + 1);
-        if (levelCleared[lvl]) {
+        if (levelCleared[current_level->index]) {
             mvwprintw(screen, 0, 14, "[CLEAR]");
         }
 

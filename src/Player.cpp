@@ -42,3 +42,7 @@ void Player::addScore(int s) {
 void Player::setLives(int l) {
     lives = l;
 }
+
+void Player::resetScore() {
+    score = 0;
+}

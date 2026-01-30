@@ -23,6 +23,7 @@ public:
     int getY() const;
     int getLives() const;
     int getScore() const;
+    void resetScore();
 
 };
 

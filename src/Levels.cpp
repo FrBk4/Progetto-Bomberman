@@ -300,11 +300,15 @@ void Levels::run() {
         //cambio di livello
         if (current_level->level[p.getY()][p.getX()] == '<' && current_level->index > 0) {
             current_level = current_level->previous;
+            lvl = current_level->index;
             p.setPosition(21, 40);
-        } else if (current_level->level[p.getY()][p.getX()] == '>' && current_level->index < 4) {
+        }
+        else if (current_level->level[p.getY()][p.getX()] == '>' && current_level->index < 4) {
             current_level = current_level->next;
+            lvl = current_level->index;
             p.setPosition(1, 2);
         }
+        
 
 
         // esplosione bomba

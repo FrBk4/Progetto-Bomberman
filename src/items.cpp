@@ -50,10 +50,8 @@ char Itemlist :: spawnrate(int prob) { //funzione che genera item casualmente su
 }
 
 void Itemlist :: hideitems(map* level, WINDOW* screen) { //nasconde la natura degli item del livello corrente
-
-        for (int y = 0; y < 23; y++)
-            for (int x = 0; x < 43; x++)
-                if (level->level[y][x]>=65 && level->level[y][x]<=90)
-                    mvwprintw(screen, y+1, x+1, "?");
-
+    for (int y = 0; y < 23; y++)
+        for (int x = 0; x < 43; x++)
+            if (level->level[y][x]>=65 && level->level[y][x]<=90)
+                mvwprintw(screen, y+1, x+1, "?");
 }

@@ -182,8 +182,6 @@ void Levels::run() {
     int enemyNTick = 0;
     int enemySTick = 0;
     const int player_tick_delay = 1; // più basso = più veloce
-    const int enemy_n_delay = 1000;     // lento
-    const int enemy_s_delay = 300;     // veloce
     
     // invincibilità
     bool invincible = false;
@@ -233,6 +231,14 @@ void Levels::run() {
         playerTick++;
         enemyNTick++;
         enemySTick++;
+
+        // livello difficoltà
+        int enemy_n_delay = 1000 - current_level->index * 150; // lento
+        if (enemy_n_delay < 200) enemy_n_delay = 200;
+
+        int enemy_s_delay = 300 - current_level->index * 40; // veloce
+        if (enemy_s_delay < 80) enemy_s_delay = 80;
+
 
         // input
         switch (ch) {
@@ -308,7 +314,7 @@ void Levels::run() {
             lvl = current_level->index;
             p.setPosition(1, 2);
         }
-        
+
 
 
         // esplosione bomba
@@ -342,15 +348,14 @@ void Levels::run() {
                         explosionCount++;
                     }
 
-                    if (c == '+') {
-                        c = (rand() % 100 < 30) ? '?' : ' ';
-                        p.addScore(20);
-                        break;
-                    }
-
-                    if (c == 'N' || c == 'S') {
+                    if (c == 'N') {
                         c = ' ';
                         p.addScore(100);
+                    }
+
+                    if (c == 'S') {
+                        c = ' ';
+                        p.addScore(150);
                     }
                 }
             }

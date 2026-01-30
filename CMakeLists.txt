@@ -9,20 +9,18 @@ add_executable(ascii_bomberman
         src/main.cpp
         src/Game.cpp
         src/Menu.cpp
-        include/Game.h
-        include/Menu.h
-        include/Leaderboard.h
+        include/Game.hpp
+        include/Menu.hpp
+        include/Leaderboard.hpp
         src/Leaderboard.cpp
-        include/Score.h
+        include/Score.hpp
         src/Score.cpp
         cmake-build-debug/Leaderboard.txt
-        include/Levels.h
+        include/Levels.hpp
         src/Levels.cpp
-        include/Player.h
-        include/Enemy.h
-        src/Enemy.cpp
+        include/Player.hpp
         src/Player.cpp
-        include/items.h
+        include/items.hpp
         src/items.cpp
 )
 

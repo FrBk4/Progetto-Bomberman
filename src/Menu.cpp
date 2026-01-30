@@ -5,9 +5,7 @@
 using namespace std;
 
 double Menu::nowSec() {
-    struct timespec ts;
-    clock_gettime(CLOCK_MONOTONIC, &ts);
-    return ts.tv_sec + ts.tv_nsec / 1e9;
+    return (double)clock() / CLOCKS_PER_SEC;
 }
 
 void Menu::initLogo() { // Inizializza il titolo
@@ -102,87 +100,85 @@ void Menu::updateBombAnimation() {
     }
 }
 
-void Menu::draw(const string items[],
+void Menu::draw(const string items[], // Gestisce la stampa delle varie cose
                 int countItems,
                 int selected,
                 int key,
                 const string subtitles[],
                 int countSubt) {
-
-    if (startTime < 0.0)
+    clear();
+    if (startTime < 0.0) // Inizia a contare il tempo solo una volta
         startTime = nowSec();
 
-    box(stdscr, 0, 0);   // disegna solo il frame
+    box(stdscr, 0, 0); // Outline del menu
 
-    int hMax, wMax;
+    int hMax, wMax; // Valore massimo di altezza e larghezza della finestra principale
     getmaxyx(stdscr, hMax, wMax);
 
-    if (!logoReady) initLogo();
-    updateBombAnimation();
+    if (!logoReady) initLogo(); // Inizializza il titolo
+    updateBombAnimation(); // Controlla che non sia da attivare l'animazione delle bombe
 
-    int startX = (wMax - logoWidth) / 2;
+    int startX = (wMax - logoWidth) / 2; // Coordinate di dove si stampa il titolo
     int startY = 4;
 
-    bool pulse = ((int)(nowSec()) % 2) == 0;
+    bool pulse = ((int)(nowSec()) % 2) == 0; // Pulsazione alternata (ogni secondo)
     if (pulse) attron(A_BOLD);
-    for (int i = 0; i < LogoLines; i++) {
+    for (int i = 0; i < LogoLines; i++) { // Stampa del titolo
         mvprintw(startY + i, startX, "%s", logoGrid[i]);
     }
     if (pulse) attroff(A_BOLD);
 
-    attron(COLOR_PAIR(1));
-    for (int y = 0; y < LogoLines; y++) {
+    attron(COLOR_PAIR(1)); // Colore delle fiamme
+    for (int y = 0; y < LogoLines; y++) { // Stampa delle fiamme
         for (int x = 0; x < logoWidth; x++) {
-            if (flameTicks[y][x] > 0)
+            if (flameTicks[y][x] > 0) {
                 mvaddch(startY + y, startX + x, ' ');
+            }
         }
     }
     attroff(COLOR_PAIR(1));
 
-    if (animActive) {
+    if (animActive) { // Animazione delle bombe
         for (int i = 0; i < 3; i++) {
             int bx = startX + bombs[i].xRel;
             int by = startY + bombs[i].yRel;
-            if (!bombs[i].exploded)
-                mvprintw(by, bx, "O");
+
+            if (!bombs[i].exploded) {
+                mvprintw(by, bx, "O"); // Bomba
+            } else { // Fiamme dell'esplosione
+                double t = nowSec();
+                if (t < bombs[i].explodeAt + 0.2) {
+                    mvprintw(by, bx, " ");
+                }
+            }
         }
     }
 
-    move(1, 2);
-    clrtoeol();
-
-    if (key == 'p')
+    if (key == int('p')) // Stampa dei comandi
         mvprintw(1, 2, "SU/GIU o W/S per muovere, INVIO per scegliere, ESC per uscire");
+    if (key == int('q')) { // Nasconde i comandi (premendo di nuovo "p")
+        move (2, 0);
+        clrtoeol();
+        box(stdscr, 0, 0);
+    }
 
-    int startMenuY = hMax - countItems - 4;
+    int startMenuY = hMax - countItems - 4; // Riga iniziale del menu
 
-    for (int i = 0; i < countItems; i++) {
-        int x = 9;
+    for (int i = 0; i < countItems; i++) { // Stampa elementi del menu
+        int x = 9; // Colonna iniziale del menu
         int y = startMenuY + i;
 
-        mvprintw(y, x - 2, " ");
-
-        if (i == selected) {
-            mvprintw(y, x - 2, "O");
-            attron(A_REVERSE);
-        }
-
-        mvprintw(y, x, "%s", items[i].c_str());
-
+        mvprintw(startMenuY + selected, x - 2, "O"); // Cursore di fianco
+        if (i == selected) attron(A_REVERSE); // Evidenzia elemento selezionato
+        mvprintw(y, x, "%s", items[i].c_str()); // Stampa elementi del menu
         if (i == selected) attroff(A_REVERSE);
     }
 
-
-    int si = (int)((nowSec() - startTime) / 7.0) % countSubt;
-    // pulisce tutta la riga dei sottotitoli
-    move(hMax - 2, 0);
-    clrtoeol();
-    // riscrive il sottotitolo
-    mvprintw(hMax - 2, wMax - subtitles[si].size() - 1, "%s", subtitles[si].c_str());
-
+    int i = (int)((nowSec() - startTime) / 7.0) % 3; // Ciclo dei sottotitoli
+    if (i >= countSubt) i = 0;
+    mvprintw(hMax - 2, wMax - size(subtitles[i]) - 1 , "%s", subtitles[i].c_str()); // Stampa sottotitoli
     refresh();
 }
-
 
 int Menu::run(const string items[], // Fa runnare tutto il menu e gestisce l'input utente
               int countItems,

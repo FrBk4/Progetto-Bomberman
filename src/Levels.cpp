@@ -230,7 +230,6 @@ void Levels::run() {
 
     WINDOW* screen = enclose_screen(Map, (int)time_left, 0);
     keypad(screen, true); //impostazioni dell'input
-    nodelay(screen, TRUE);
     
     // input loop
     bool ingame = true;
@@ -252,6 +251,7 @@ void Levels::run() {
     int explosionCount = 0;
 
     while (ingame) {
+        nodelay(screen, true);
         napms(1); //solo SOLO per non saturare CPU
 
         int ch = wgetch(screen);
@@ -294,9 +294,11 @@ void Levels::run() {
                 break;
             case 'p': //visualizzazione comandi
             case 'P':
+                time_t menu_span = time(nullptr);
                 int x_offset = getmaxx(stdscr) / 2 - 21;
                 if (x_offset < 0) x_offset = 0;
                 WINDOW* controls = newwin(25, 45, 3, x_offset);
+                nodelay(controls, true);
                 mvwprintw(controls,1,1, "> Comandi del gioco: < \n\n");
                 wprintw(controls, " > WASD / keypad: movimento \n > E: piazza mina \n > ESC: esci \n\n Premi P o ESC per tornare al gioco.");
                 box(controls, 0, 0);
@@ -305,6 +307,8 @@ void Levels::run() {
                     c = wgetch(controls);
                 }while(c != 27 && c != 'P'&& c!= 'p');
                 delwin(controls);
+                menu_span = time(nullptr) - menu_span;
+                time_left += menu_span;
                 wrefresh(screen);
                 screen=enclose_screen(current_level, (int)time_left, lvl);
                 mvwprintw(screen, p.getY()+1, p.getX()+1, "%c", playerChar);

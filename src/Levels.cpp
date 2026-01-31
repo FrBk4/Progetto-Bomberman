@@ -34,11 +34,11 @@ map* Levels::genlevels() {  //questa funzione genera i 5 livelli e ritorna un ar
         for (int y = 0; y < 23; y++)
             for (int x = 0; x < 43; x++) {
                 if (x % 2 == 0 && y % 2 == 0)
-                    node->level[y][x] = static_cast<char>(219);
+                    node->level[y][x] = '#';
                 else
                     node->level[y][x] = ' ';
                 if (x == 0 || y == 0 || x == 42 || y == 22)
-                    node->level[y][x] = static_cast<char>(219);
+                    node->level[y][x] = '#';
             }
 
         if (prev)
@@ -56,7 +56,7 @@ map* Levels::genlevels() {  //questa funzione genera i 5 livelli e ritorna un ar
                 if (node->level[y][x]==' ' && (x>5 || y>5)) {
                     int p = rand()%100;
                     if (p<=prob)
-                        node->level[y][x]=static_cast<char>(177);
+                        node->level[y][x]='+';
                 }
             }
 
@@ -73,8 +73,8 @@ map* Levels::genlevels() {  //questa funzione genera i 5 livelli e ritorna un ar
     }
 
     for (map* node = head; node; node = node->next) {
-        if (node->index !=0) node->level[1][0] = static_cast<char>(174);
-        if (node->index !=4) node->level[21][42] = static_cast<char>(175);
+        if (node->index !=0) node->level[1][0] = '<';
+        if (node->index !=4) node->level[21][42] = '>';
     }
 
     //spawn nemici
@@ -119,14 +119,9 @@ WINDOW* Levels::enclose_screen(map* map, int time_left, int lvl) {  //questa fun
 
     WINDOW * screen = newwin(25, 45, 3, x_offset);
 
-    for (int y=0; y<23; y++)
-        for(int x=0; x<43; x++) {
-            mvwprintw(screen, y+1, x+1, "%c", map->level[y][x]);
-        }
+    printscreen(map, screen);
 
-    items.hideitems(map, screen);
 
-    wborder(screen, 186, 186, 205, 205, 201, 187, 200, 188);
     mvwprintw(screen, 24, 29, "Tempo: %ds", time_left);
     mvwprintw(screen, 24, 3, "Punti: %d",p.getScore());
     mvwprintw(screen, 24, 16, "Vite: %d",p.getLives());
@@ -148,14 +143,8 @@ map* Levels::change_level(map *head, WINDOW* screen, bool action, int lvl, int t
     }
     if (!node) return head;
 
-    for (int y=0; y<23; y++)
-        for(int x=0; x<43; x++) {
-            mvwprintw(screen, y+1, x+1, "%c", node->level[y][x]);
-        }
+    printscreen(node, screen);
 
-    items.hideitems(node, screen);
-
-    wborder(screen, 186, 186, 205, 205, 201, 187, 200, 188);
     mvwprintw(screen, 24, 29, "Tempo: %d s", time_left);
     mvwprintw(screen, 24, 3, "Punti: %d",p.getScore());
     mvwprintw(screen, 24, 16, "Vite: %d", lives);
@@ -165,6 +154,36 @@ map* Levels::change_level(map *head, WINDOW* screen, bool action, int lvl, int t
     wrefresh(screen);
 
     return node;
+}
+
+void Levels::printscreen(map* level, WINDOW* screen) {
+
+    for (int y=0; y<23; y++)
+        for (int x=0; x<43; x++)
+            switch (level->level[y][x]) {
+
+                case '#':
+                    mvwaddch(screen, y+1, x+1, ACS_BLOCK);
+                    break;
+
+                case '+':
+                    mvwaddch(screen, y+1, x+1, ACS_CKBOARD);
+                    break;
+
+                /*case '>':
+                    mvwaddch(screen, y+1, x+1, "a");
+                    break;
+
+                case '<':
+                    mvwprintw(screen, y+1, x+1, "%s", "«");
+                    break;*/
+
+                default:
+                    mvwprintw(screen, y+1, x+1, "%c", level->level[y][x]);
+                    break;
+            }
+    items.hideitems(level, screen);
+    wborder(screen, ACS_VLINE, ACS_VLINE, ACS_HLINE, ACS_HLINE, ACS_ULCORNER, ACS_URCORNER, ACS_LLCORNER, ACS_LRCORNER);
 }
 
 
@@ -273,6 +292,23 @@ void Levels::run() {
                     current_level->level[bombY][bombX] = 'o';
                 }
                 break;
+            case 'p': //visualizzazione comandi
+            case 'P':
+                int x_offset = getmaxx(stdscr) / 2 - 21;
+                if (x_offset < 0) x_offset = 0;
+                WINDOW* controls = newwin(25, 45, 3, x_offset);
+                mvwprintw(controls,1,1, "> Comandi del gioco: < \n\n");
+                wprintw(controls, " > WASD / keypad: movimento \n > E: piazza mina \n > ESC: esci \n\n Premi P o ESC per tornare al gioco.");
+                box(controls, 0, 0);
+                char c;
+                do {
+                    c = wgetch(controls);
+                }while(c != 27 && c != 'P'&& c!= 'p');
+                delwin(controls);
+                wrefresh(screen);
+                screen=enclose_screen(current_level, (int)time_left, lvl);
+                mvwprintw(screen, p.getY()+1, p.getX()+1, "%c", playerChar);
+                break;
         } //fine input loop
 
         // movimento player
@@ -295,7 +331,7 @@ void Levels::run() {
                 // il player non entra nella cella
             }
             // movimento normale
-            else if (next != static_cast<char>(219) && next != static_cast<char>(177)) {
+            else if (next != '#' && next != '+') {
                 p.move(dx, dy);
             }
         //}
@@ -319,12 +355,12 @@ void Levels::run() {
 
 
         //cambio di livello
-        if (current_level->level[p.getY()][p.getX()] == static_cast<char>(174) && current_level->index > 0) {
+        if (current_level->level[p.getY()][p.getX()] == '<' && current_level->index > 0) {
             current_level = current_level->previous;
             lvl = current_level->index;
             p.setPosition(21, 41);
         }
-        else if (current_level->level[p.getY()][p.getX()] == static_cast<char>(175) && current_level->index < 4) {
+        else if (current_level->level[p.getY()][p.getX()] == '>' && current_level->index < 4) {
             current_level = current_level->next;
             lvl = current_level->index;
             p.setPosition(1, 1);
@@ -357,7 +393,7 @@ void Levels::run() {
                     char &c = current_level->level[ny][nx];
                     if (c == static_cast<char>(219)) break;
 
-                    if (c == static_cast<char>(177)) {
+                    if (c == '+') {
                         c = ' ';
                         p.addScore(20);
                         break;
@@ -493,7 +529,8 @@ void Levels::run() {
 
         // render
         werase(screen);
-        wborder(screen, 186, 186, 205, 205, 201, 187, 200, 188);
+
+        printscreen(current_level, screen);
 
         mvwprintw(screen, 24, 3,  "Punti: %d", p.getScore());
         mvwprintw(screen, 24, 16, "Vite: %d",  p.getLives());
@@ -503,11 +540,7 @@ void Levels::run() {
             mvwprintw(screen, 0, 14, "[CLEAR]");
         }
 
-        for (int y = 0; y < 23; y++)
-            for (int x = 0; x < 43; x++)
-                mvwprintw(screen, y + 1, x + 1, "%c",
-                          current_level->level[y][x]);
-        items.hideitems(current_level, screen);
+
 
         if (explosionVisible) {
             wattron(screen, COLOR_PAIR(3));   // colore acceso

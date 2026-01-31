@@ -19,6 +19,8 @@ public:
 
     map* change_level(map*, WINDOW*, bool, int, int, int);
 
+    void printscreen(map*, WINDOW*);
+
     void run();
 };
 

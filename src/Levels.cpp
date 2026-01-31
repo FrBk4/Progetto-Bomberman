@@ -179,7 +179,7 @@ void Levels::run() {
     initscr();
     start_color();
     use_default_colors();
-    init_pair(1, COLOR_RED, COLOR_BLACK);
+    init_pair(3, COLOR_RED, COLOR_BLACK);
     init_pair(2, COLOR_CYAN, COLOR_BLACK);
 
     time_t start = time(nullptr); //gestione tempo
@@ -509,7 +509,7 @@ void Levels::run() {
                           current_level->level[y][x]);
 
         if (explosionVisible) {
-            wattron(screen, COLOR_PAIR(1));   // colore acceso
+            wattron(screen, COLOR_PAIR(3));   // colore acceso
 
             for (int i = 0; i < explosionCount; i++) {
                 mvwprintw(screen,
@@ -517,7 +517,7 @@ void Levels::run() {
                           explosionX[i] + 1,
                           "*");
             }
-            wattroff(screen, COLOR_PAIR(1));  // colore spento
+            wattroff(screen, COLOR_PAIR(3));  // colore spento
 
             if (time(nullptr) - explosionTime >= 1)
                 explosionVisible = false;

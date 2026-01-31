@@ -66,6 +66,8 @@ void Menu::destroyCross(int xRel, int yRel, const int R) { // Animazione per la 
 void Menu::startBombAnimation() { // Funzione che da il via a tutto il processo delle bombe
     if (!logoReady) initLogo(); // Inizializza il titolo in caso
 
+    init_pair(1, COLOR_RED, COLOR_RED);
+
     double t0 = nowSec(); // Tempo di inizio
     animActive = true;
     animEndAt = t0 + 2.6;

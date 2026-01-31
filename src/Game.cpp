@@ -11,7 +11,6 @@ void Game::initCurses() { // Funzioni base per far andare nCurses
     curs_set(0);
     start_color();
     use_default_colors();
-    init_pair(1, COLOR_RED, COLOR_RED);
 }
 
 void Game::shutdownCurses() { // Funzione per chiudere nCurses

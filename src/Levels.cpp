@@ -34,11 +34,11 @@ map* Levels::genlevels() {  //questa funzione genera i 5 livelli e ritorna un ar
         for (int y = 0; y < 23; y++)
             for (int x = 0; x < 43; x++) {
                 if (x % 2 == 0 && y % 2 == 0)
-                    node->level[y][x] = '#';
+                    node->level[y][x] = static_cast<char>(219);
                 else
                     node->level[y][x] = ' ';
                 if (x == 0 || y == 0 || x == 42 || y == 22)
-                    node->level[y][x] = '#';
+                    node->level[y][x] = static_cast<char>(219);
             }
 
         if (prev)
@@ -56,7 +56,7 @@ map* Levels::genlevels() {  //questa funzione genera i 5 livelli e ritorna un ar
                 if (node->level[y][x]==' ' && (x>5 || y>5)) {
                     int p = rand()%100;
                     if (p<=prob)
-                        node->level[y][x]='+';
+                        node->level[y][x]=static_cast<char>(177);
                 }
             }
 
@@ -73,8 +73,8 @@ map* Levels::genlevels() {  //questa funzione genera i 5 livelli e ritorna un ar
     }
 
     for (map* node = head; node; node = node->next) {
-        if (node->index !=0) node->level[1][1] = '<';
-        if (node->index !=4) node->level[21][41] = '>';
+        if (node->index !=0) node->level[1][1] = static_cast<char>(174);
+        if (node->index !=4) node->level[21][41] = static_cast<char>(175);
     }
 
     //spawn nemici
@@ -174,7 +174,7 @@ map* Levels::change_level(map *head, WINDOW* screen, bool action, int lvl, int t
 void Levels::run() {
 
     clear();
-    box(stdscr, 0, 0);
+    //box(stdscr, 0, 0);
     refresh();
     initscr();
     start_color();
@@ -295,7 +295,7 @@ void Levels::run() {
                 // il player non entra nella cella
             }
             // movimento normale
-            else if (next != '#' && next != '+') {
+            else if (next != static_cast<char>(219) && next != static_cast<char>(177)) {
                 p.move(dx, dy);
             }
         }
@@ -319,12 +319,12 @@ void Levels::run() {
 
 
         //cambio di livello
-        if (current_level->level[p.getY()][p.getX()] == '<' && current_level->index > 0) {
+        if (current_level->level[p.getY()][p.getX()] == static_cast<char>(174) && current_level->index > 0) {
             current_level = current_level->previous;
             lvl = current_level->index;
             p.setPosition(21, 40);
         }
-        else if (current_level->level[p.getY()][p.getX()] == '>' && current_level->index < 4) {
+        else if (current_level->level[p.getY()][p.getX()] == static_cast<char>(175) && current_level->index < 4) {
             current_level = current_level->next;
             lvl = current_level->index;
             p.setPosition(1, 2);
@@ -355,9 +355,9 @@ void Levels::run() {
                         break;
 
                     char &c = current_level->level[ny][nx];
-                    if (c == '#') break;
+                    if (c == static_cast<char>(219)) break;
 
-                    if (c == '+') {
+                    if (c == static_cast<char>(177)) {
                         c = ' ';
                         p.addScore(20);
                         break;
@@ -493,7 +493,7 @@ void Levels::run() {
 
         // render
         werase(screen);
-        box(screen, 0, 0);
+        wborder(screen, 186, 186, 205, 205, 201, 187, 200, 188);
 
         mvwprintw(screen, 24, 3,  "Punti: %d", p.getScore());
         mvwprintw(screen, 24, 16, "Vite: %d",  p.getLives());
@@ -503,8 +503,8 @@ void Levels::run() {
             mvwprintw(screen, 0, 14, "[CLEAR]");
         }
 
-        for (int y = 0; y < 22; y++)
-            for (int x = 0; x < 42; x++)
+        for (int y = 0; y < 23; y++)
+            for (int x = 0; x < 43; x++)
                 mvwprintw(screen, y + 1, x + 1, "%c",
                           current_level->level[y][x]);
 

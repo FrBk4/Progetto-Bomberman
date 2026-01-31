@@ -16,7 +16,7 @@ Itemlist items;
 Player p(1, 1);
 
 bool inBounds(int y, int x) {
-    return y >= 0 && y < 22 && x >= 0 && x < 42;
+    return y > 0 && y < 22 && x > 0 && x < 42;
 }
 
 map* Levels::genlevels() {  //questa funzione genera i 5 livelli e ritorna un array che li contiene come matrici 23x43
@@ -73,8 +73,8 @@ map* Levels::genlevels() {  //questa funzione genera i 5 livelli e ritorna un ar
     }
 
     for (map* node = head; node; node = node->next) {
-        if (node->index !=0) node->level[1][1] = static_cast<char>(174);
-        if (node->index !=4) node->level[21][41] = static_cast<char>(175);
+        if (node->index !=0) node->level[1][0] = static_cast<char>(174);
+        if (node->index !=4) node->level[21][42] = static_cast<char>(175);
     }
 
     //spawn nemici
@@ -281,7 +281,7 @@ void Levels::run() {
             int nx = p.getX() + dx;
             int ny = p.getY() + dy;
 
-            if (inBounds(ny, nx)) {
+            //if (inBounds(ny, nx)) {
             char next = current_level->level[ny][nx];
 
             // player sul nemico
@@ -298,7 +298,7 @@ void Levels::run() {
             else if (next != static_cast<char>(219) && next != static_cast<char>(177)) {
                 p.move(dx, dy);
             }
-        }
+        //}
 
 
             playerTick = 0;
@@ -322,12 +322,12 @@ void Levels::run() {
         if (current_level->level[p.getY()][p.getX()] == static_cast<char>(174) && current_level->index > 0) {
             current_level = current_level->previous;
             lvl = current_level->index;
-            p.setPosition(21, 40);
+            p.setPosition(21, 41);
         }
         else if (current_level->level[p.getY()][p.getX()] == static_cast<char>(175) && current_level->index < 4) {
             current_level = current_level->next;
             lvl = current_level->index;
-            p.setPosition(1, 2);
+            p.setPosition(1, 1);
         }
 
 
@@ -507,6 +507,7 @@ void Levels::run() {
             for (int x = 0; x < 43; x++)
                 mvwprintw(screen, y + 1, x + 1, "%c",
                           current_level->level[y][x]);
+        items.hideitems(current_level, screen);
 
         if (explosionVisible) {
             wattron(screen, COLOR_PAIR(3));   // colore acceso

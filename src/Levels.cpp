@@ -215,7 +215,7 @@ void Levels::run() {
     bool invincible = false;
     int blinkCounter = 0;
     const int maxBlink = 16;
-    const int blink_delay = 100;
+    const int blink_delay = 11;
     int blinkTick = 0;
 
     // player assoluto
@@ -241,7 +241,7 @@ void Levels::run() {
     bool bombPlaced = false;
     int bombX = -1, bombY = -1;
     time_t bombTime = 0;
-    int bombRadius = 2;
+    int bombRadius = 1;
 
     // esplosione
     bool explosionVisible = false;

@@ -2,13 +2,14 @@
 #define ITEMS_H
 
 #include <ctime>
+#include "player.hpp"
 
 class Itemlist {
 public:
     char spawnrate(int prob);
-    void effect_list(char effect, int* player_lives, map* level, WINDOW* screen, time_t start, time_t* time_effect, int* radius);
+    void effect_list(char effect, int* player_lives, map* level, WINDOW* screen, time_t start, time_t* time_effect, int* radius, bool *invincible, Player* p, int* mult);
     void hideitems(map* level, WINDOW* screen);
-    void reseteffects(int* radius);
+    void reseteffects(int* radius, bool* invincible, int* mult);
 };
 
 #endif

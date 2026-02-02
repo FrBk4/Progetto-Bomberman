@@ -190,6 +190,9 @@ void Levels::run() {
     time_t time_left = 100;
     time_t time_effect = 0;
 
+    //moltpiplicatore esperienza
+    int EXPmult = 1;
+
     // gestione ticks
     int playerTick = 0;
     int enemyNTick = 0;
@@ -334,7 +337,7 @@ void Levels::run() {
         //fetch item
         if (current_level->level[p.getY()][p.getX()]>=65 && current_level->level[p.getY()][p.getX()]<=90) {
             int lives = p.getLives();
-            items.effect_list(current_level->level[p.getY()][p.getX()], &lives, current_level, screen, start, &time_effect, &bombRadius);
+            items.effect_list(current_level->level[p.getY()][p.getX()], &lives, current_level, screen, start, &time_effect, &bombRadius, &invincible, &p, &EXPmult);
             p.setLives(lives);
             current_level->level[p.getY()][p.getX()] = ' ';
             wattron(screen, COLOR_PAIR(2));
@@ -355,7 +358,7 @@ void Levels::run() {
                 if (nxt && levelCleared[nxt->index]) {
                     current_level->next = nxt->next;
                     if (nxt->next) nxt->next->previous = current_level;
-                    delete nxt;
+                    //delete nxt;
                     time_left += 60;
                 }
             }
@@ -371,7 +374,7 @@ void Levels::run() {
                 if (prev && levelCleared[prev->index]) {
                     current_level->previous = prev->previous;
                     if (prev->previous) prev->previous->next = current_level;
-                    delete prev;
+                    //delete prev;
                     time_left += 60;
                 }
             }
@@ -407,7 +410,7 @@ void Levels::run() {
 
                     if (c == '+') {
                         c = ' ';
-                        p.addScore(20);
+                        p.addScore(20*EXPmult);
                         break;
                     }
 
@@ -419,13 +422,13 @@ void Levels::run() {
 
                     if (c == 'N') {
                         c = ' ';
-                        p.addScore(100);
+                        p.addScore(100*EXPmult);
                         current_level->level[ny][nx] = items.spawnrate(100);
                     }
 
                     if (c == 'S') {
                         c = ' ';
-                        p.addScore(150);
+                        p.addScore(150*EXPmult);
                         current_level->level[ny][nx] = items.spawnrate(100);
                     }
                 }
@@ -529,11 +532,15 @@ void Levels::run() {
                 blinkTick = 0;
             }
         
-            if (blinkCounter >= maxBlink) {
+            /*if (blinkCounter >= maxBlink) {
                 invincible = false;
                 blinkCounter = 0;
                 blinkTick = 0;
-            }
+            }*/
+
+        }else if (invincible == false) {
+            blinkCounter = 0;
+            blinkTick = 0;
         }
 
         //gestione portali d'accesso a livelli completati
@@ -585,8 +592,13 @@ void Levels::run() {
 
         time_t now = time(nullptr);
         time_left -= (now - start);
-        if (time_effect - time(nullptr) == 0)
-            bombRadius = 1;
+        if (time_effect - time(nullptr) == 0) {
+            items.reseteffects(&bombRadius, &invincible, &EXPmult);
+            time_effect = 0;
+        }
+
+
+
 
         start = now;
 

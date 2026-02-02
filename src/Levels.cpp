@@ -6,7 +6,7 @@
 #include "../include/Enemy.hpp"
 #include "../include/Items.hpp"
 #include "../include/Score.hpp"
-#include<clocale>
+#include <clocale>
 
 #define DESTR_RATIO (10+(node->index*4))
 #define ITEMS_RATIO (node->index+2)
@@ -19,7 +19,6 @@ Player p(1, 1);
 bool inBounds(int y, int x) {
     return y > 0 && y < 22 && x > 0 && x < 42;
 }
-
 
 map* Levels::genlevels() {  //questa funzione genera i 5 livelli e ritorna un array che li contiene come matrici 23x43
 
@@ -100,9 +99,7 @@ map* Levels::genlevels() {  //questa funzione genera i 5 livelli e ritorna un ar
     return head;
 }
 
-
 //
-
 
 WINDOW* Levels::enclose_screen(map* map, int time_left, int lvl) {  //questa funzione mostra su schermo la mappa (inizialmente livello 1)
 
@@ -113,12 +110,10 @@ WINDOW* Levels::enclose_screen(map* map, int time_left, int lvl) {  //questa fun
 
     printscreen(map, screen);
 
-
     mvwprintw(screen, 24, 29, "Tempo: %ds", time_left);
     mvwprintw(screen, 24, 3, "Punti: %d",p.getScore());
     mvwprintw(screen, 24, 16, "Vite: %d",p.getLives());
     mvwprintw(screen, 0, 2, "Livello: %d", lvl + 1);
-
 
     wrefresh(screen);
 
@@ -141,7 +136,6 @@ map* Levels::change_level(map *head, WINDOW* screen, bool action, int lvl, int t
     mvwprintw(screen, 24, 3, "Punti: %d",p.getScore());
     mvwprintw(screen, 24, 16, "Vite: %d", lives);
     mvwprintw(screen, 0, 2, "Livello: %d", lvl + 1);
-
 
     wrefresh(screen);
 
@@ -170,9 +164,7 @@ void Levels::printscreen(map* level, WINDOW* screen) {
     wborder(screen, ACS_VLINE, ACS_VLINE, ACS_HLINE, ACS_HLINE, ACS_ULCORNER, ACS_URCORNER, ACS_LLCORNER, ACS_LRCORNER);
 }
 
-
 //----------------------------------------------------------------------------------------------------------------------
-
 
 void Levels::run() {
 
@@ -566,8 +558,6 @@ void Levels::run() {
             mvwprintw(screen, 0, 14, "[CLEAR]");
         }
 
-
-
         if (explosionVisible) {
             wattron(screen, COLOR_PAIR(3));   // colore acceso
 
@@ -597,16 +587,11 @@ void Levels::run() {
             time_effect = 0;
         }
 
-
-
-
         start = now;
 
         if (time_left < 0) time_left = 0;
 
-        if (p.getLives() <= 0 || time_left <= 0)
-            ingame = false;
-
+        if (p.getLives() <= 0 || time_left <= 0) ingame = false;
         }
 
         wrefresh(screen);

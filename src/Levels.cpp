@@ -6,7 +6,7 @@
 #include "../include/Enemy.hpp"
 #include "../include/Items.hpp"
 #include "../include/Score.hpp"
-#include<locale.h>
+#include<clocale>
 
 #define DESTR_RATIO (10+(node->index*4))
 #define ITEMS_RATIO (node->index+2)
@@ -162,14 +162,6 @@ void Levels::printscreen(map* level, WINDOW* screen) {
                     mvwaddch(screen, y+1, x+1, ACS_CKBOARD);
                     break;
 
-                /*case '>':
-                    mvwaddch(screen, y+1, x+1, "a");
-                    break;
-
-                case '<':
-                    mvwprintw(screen, y+1, x+1, "%s", "«");
-                    break;*/
-
                 default:
                     mvwprintw(screen, y+1, x+1, "%c", level->level[y][x]);
                     break;
@@ -195,7 +187,7 @@ void Levels::run() {
     init_pair(2, COLOR_CYAN, COLOR_BLACK);
 
     time_t start = time(nullptr); //gestione tempo
-    time_t time_left = 60;
+    time_t time_left = 100;
     time_t time_effect = 0;
 
     // gestione ticks
@@ -352,28 +344,39 @@ void Levels::run() {
 
 
         //cambio di livello
-        if (current_level->level[p.getY()][p.getX()] == '<' && !levelCleared[current_level->previous->index]) {
-            current_level = current_level->previous;
-            lvl = current_level->index;
-            p.setPosition(21, 41);
-            if (levelCleared[current_level->next->index] == true) {
-                map* tmp = current_level->next;
-                current_level->next = current_level->next->next;
-                delete tmp;
-                time_left += 30;
+        if (current_level->level[p.getY()][p.getX()] == '<') {
+            if (current_level->previous) {
+                current_level = current_level->previous;
+                lvl = current_level->index;
+                p.setPosition(21, 41);
+
+                // eliminazione del nodo successivo completato
+                map* nxt = current_level->next;
+                if (nxt && levelCleared[nxt->index]) {
+                    current_level->next = nxt->next;
+                    if (nxt->next) nxt->next->previous = current_level;
+                    delete nxt;
+                    time_left += 60;
+                }
             }
         }
-        else if (current_level->level[p.getY()][p.getX()] == '>' && !levelCleared[current_level->next->index]) {
-            current_level = current_level->next;
-            lvl = current_level->index;
-            p.setPosition(1, 1);
-            if (levelCleared[current_level->previous->index] == true) {
-                map* tmp = current_level->previous;
-                current_level->previous = current_level->previous->previous;
-                delete tmp;
-                time_left += 30;
+        else if (current_level->level[p.getY()][p.getX()] == '>') {
+            if (current_level->next) {
+                current_level = current_level->next;
+                lvl = current_level->index;
+                p.setPosition(1, 1);
+
+                // eliminazione del nodo precedente completato
+                map* prev = current_level->previous;
+                if (prev && levelCleared[prev->index]) {
+                    current_level->previous = prev->previous;
+                    if (prev->previous) prev->previous->next = current_level;
+                    delete prev;
+                    time_left += 60;
+                }
             }
         }
+
 
 
 
@@ -535,10 +538,10 @@ void Levels::run() {
 
         //gestione portali d'accesso a livelli completati
         for (map* node = Map; node; node = node->next) {
-            if (node->level[1][0] == '<' && levelCleared[node->previous->index]) {
+            if (node->previous && node->level[1][0] == '<' && levelCleared[node->previous->index]) {
                 node->level[1][0] = '#';
             }
-            if (node->level[21][42] == '>' && levelCleared[node->next->index]) {
+            if (node->next && node->level[21][42] == '>' && levelCleared[node->next->index]) {
                 node->level[21][42] = '#';
             }
 

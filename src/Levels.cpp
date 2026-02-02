@@ -64,16 +64,6 @@ map* Levels::genlevels() {  //questa funzione genera i 5 livelli e ritorna un ar
 
     }
 
-    srand(time(nullptr));     //generazione casuale di items
-    for (map* node = head; node; node = node->next) {
-        for (int y=0; y<23; y++)
-            for(int x=0; x<43; x++) {
-                if (node->level[y][x]==' ' && (x>5 || y>5))
-                    node->level[y][x] = items.spawnrate(ITEMS_RATIO);
-            }
-
-    }
-
     for (map* node = head; node; node = node->next) {
         if (node->index !=0) node->level[1][0] = '<';
         if (node->index !=4) node->level[21][42] = '>';
@@ -205,7 +195,7 @@ void Levels::run() {
     init_pair(2, COLOR_CYAN, COLOR_BLACK);
 
     time_t start = time(nullptr); //gestione tempo
-    time_t time_left = 1000;
+    time_t time_left = 60;
     time_t time_effect = 0;
 
     // gestione ticks
@@ -362,15 +352,27 @@ void Levels::run() {
 
 
         //cambio di livello
-        if (current_level->level[p.getY()][p.getX()] == '<' && current_level->index > 0) {
+        if (current_level->level[p.getY()][p.getX()] == '<' && !levelCleared[current_level->previous->index]) {
             current_level = current_level->previous;
             lvl = current_level->index;
             p.setPosition(21, 41);
+            if (levelCleared[current_level->next->index] == true) {
+                map* tmp = current_level->next;
+                current_level->next = current_level->next->next;
+                delete tmp;
+                time_left += 30;
+            }
         }
-        else if (current_level->level[p.getY()][p.getX()] == '>' && current_level->index < 4) {
+        else if (current_level->level[p.getY()][p.getX()] == '>' && !levelCleared[current_level->next->index]) {
             current_level = current_level->next;
             lvl = current_level->index;
             p.setPosition(1, 1);
+            if (levelCleared[current_level->previous->index] == true) {
+                map* tmp = current_level->previous;
+                current_level->previous = current_level->previous->previous;
+                delete tmp;
+                time_left += 30;
+            }
         }
 
 
@@ -415,11 +417,13 @@ void Levels::run() {
                     if (c == 'N') {
                         c = ' ';
                         p.addScore(100);
+                        current_level->level[ny][nx] = items.spawnrate(100);
                     }
 
                     if (c == 'S') {
                         c = ' ';
                         p.addScore(150);
+                        current_level->level[ny][nx] = items.spawnrate(100);
                     }
                 }
             }
@@ -496,12 +500,7 @@ void Levels::run() {
         levelCleared[idx] = true;   // questo livello è clear
         p.setLives(3);
 
-        // avanti se non ultimo livello
-        if (idx < 4) {
-            current_level = current_level->next;
-            lvl = current_level->index;
-            p.setPosition(1, 2);
-        }
+
         bool allCleared = true;
         for (int i = 0; i < 5; i++) {
             if (!levelCleared[i]) {
@@ -534,8 +533,18 @@ void Levels::run() {
             }
         }
 
+        //gestione portali d'accesso a livelli completati
+        for (map* node = Map; node; node = node->next) {
+            if (node->level[1][0] == '<' && levelCleared[node->previous->index]) {
+                node->level[1][0] = '#';
+            }
+            if (node->level[21][42] == '>' && levelCleared[node->next->index]) {
+                node->level[21][42] = '#';
+            }
+
         // render
         werase(screen);
+
 
         printscreen(current_level, screen);
 
@@ -582,6 +591,8 @@ void Levels::run() {
 
         if (p.getLives() <= 0 || time_left <= 0)
             ingame = false;
+
+        }
 
         wrefresh(screen);
 

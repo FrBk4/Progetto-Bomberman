@@ -10,7 +10,7 @@ void Itemlist :: effect_list(char effect, int* player_lives, map* level, WINDOW*
     switch (effect) {
 
         case 'B':  //incrementatore di raggio - 10s
-            *radius+=1;
+            if (*radius < 2) *radius+=1;
             *time_effect = time(nullptr) + 10;
             break;
 

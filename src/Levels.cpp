@@ -6,6 +6,7 @@
 #include "../include/Enemy.hpp"
 #include "../include/Items.hpp"
 #include "../include/Score.hpp"
+#include<locale.h>
 
 #define DESTR_RATIO (10+(node->index*4))
 #define ITEMS_RATIO (node->index+2)
@@ -18,6 +19,7 @@ Player p(1, 1);
 bool inBounds(int y, int x) {
     return y > 0 && y < 22 && x > 0 && x < 42;
 }
+
 
 map* Levels::genlevels() {  //questa funzione genera i 5 livelli e ritorna un array che li contiene come matrici 23x43
 
@@ -195,6 +197,7 @@ void Levels::run() {
     clear();
     //box(stdscr, 0, 0);
     refresh();
+    setlocale(LC_ALL, "");
     initscr();
     start_color();
     use_default_colors();
@@ -203,7 +206,7 @@ void Levels::run() {
 
     time_t start = time(nullptr); //gestione tempo
     time_t time_left = 1000;
-    time_t start_effect = 0;
+    time_t time_effect = 0;
 
     // gestione ticks
     int playerTick = 0;
@@ -229,7 +232,8 @@ void Levels::run() {
     p.setPosition(1,1);
 
     WINDOW* screen = enclose_screen(Map, (int)time_left, 0);
-    keypad(screen, true); //impostazioni dell'input
+
+    //impostazioni dell'input
     
     // input loop
     bool ingame = true;
@@ -252,6 +256,7 @@ void Levels::run() {
 
     while (ingame) {
         nodelay(screen, true);
+        keypad(screen, true);
         napms(1); //solo SOLO per non saturare CPU
 
         int ch = wgetch(screen);
@@ -347,10 +352,8 @@ void Levels::run() {
         //fetch item
         if (current_level->level[p.getY()][p.getX()]>=65 && current_level->level[p.getY()][p.getX()]<=90) {
             int lives = p.getLives();
-            int radius = bombRadius;
-            items.effect_list(current_level->level[p.getY()][p.getX()], &lives, current_level, screen, start, &start_effect, &bombRadius);
+            items.effect_list(current_level->level[p.getY()][p.getX()], &lives, current_level, screen, start, &time_effect, &bombRadius);
             p.setLives(lives);
-            bombRadius = radius;
             current_level->level[p.getY()][p.getX()] = ' ';
             wattron(screen, COLOR_PAIR(2));
             mvwprintw(screen, p.getY()+1, p.getX()+1, "%c", playerChar);
@@ -395,7 +398,7 @@ void Levels::run() {
                         break;
 
                     char &c = current_level->level[ny][nx];
-                    if (c == static_cast<char>(219)) break;
+                    if (c == '#') break;
 
                     if (c == '+') {
                         c = ' ';
@@ -570,6 +573,9 @@ void Levels::run() {
 
         time_t now = time(nullptr);
         time_left -= (now - start);
+        if (time_effect - time(nullptr) == 0)
+            bombRadius = 1;
+
         start = now;
 
         if (time_left < 0) time_left = 0;
@@ -578,7 +584,8 @@ void Levels::run() {
             ingame = false;
 
         wrefresh(screen);
-    }
+
+    } // fine gameloop
 
     // bonus tempo se vittoria
     if (victory && time_left > 0) {

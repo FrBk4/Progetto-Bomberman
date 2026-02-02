@@ -10,8 +10,8 @@ void Itemlist :: effect_list(char effect, int* player_lives, map* level, WINDOW*
     switch (effect) {
 
         case 'B':  //incrementatore di raggio - 10s
-            *radius+=2;
-            *time_effect = time(nullptr);
+            *radius+=1;
+            *time_effect = time(nullptr) + 10;
             break;
 
         case 'M':  //medikit - ripristina le vite
@@ -54,4 +54,9 @@ void Itemlist :: hideitems(map* level, WINDOW* screen) { //nasconde la natura de
         for (int x = 0; x < 43; x++)
             if (level->level[y][x]=='B' ||level->level[y][x]=='M' ||level->level[y][x]=='W')
                 mvwprintw(screen, y+1, x+1, "?");
+}
+
+void Itemlist :: reseteffects(int *radius) {
+
+    *radius = 1;
 }

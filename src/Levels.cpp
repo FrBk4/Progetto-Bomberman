@@ -49,7 +49,7 @@ map* Levels::genlevels() {  //questa funzione genera i 5 livelli e ritorna un ar
         prev = node;
     }
 
-    srand(time(nullptr));     //generazione casuale di mura distruttibili (=+) che dipende dal livello
+    srand(time(nullptr));     //generazione casuale di mura distruttibili (+) che dipende dal livello
     for (map* node = head; node; node = node->next) {
         int prob = DESTR_RATIO;
         for (int y=0; y<23; y++)
@@ -91,10 +91,10 @@ map* Levels::genlevels() {  //questa funzione genera i 5 livelli e ritorna un ar
                     else if (r == 99) {       // nemico veloce
                         node->level[y][x] = 'S';
                         placed++;
-                    } else if (r < 5) {
+                    } else if (r < 15) {
                         node->level[y][x] = 'T'; // nemico tank
                         placed++;
-                    } else if (r == 50 && !bplaced) {
+                    } else if (r < 99 && !bplaced) {
                         node->level[y][x] = 'U'; // nemico bomberman
                         bplaced = true;
                         placed++;
@@ -191,7 +191,6 @@ void Levels::run() {
     time_t time_effect = 0;
 
     int EXPmult = 1;
-    bool updradius = false;
 
     // tick
     int playerTick = 0;
@@ -242,6 +241,7 @@ void Levels::run() {
     int  uBombX = -1, uBombY = -1;
     time_t uBombTime = 0;
     int uBombDelay = 2 + rand() % 3;
+    int uBombRadius = 2;
 
     bool uExplosionVisible = false;
     time_t uExplosionTime = 0;
@@ -348,7 +348,7 @@ void Levels::run() {
                 // NON entra nella cella
             }
             // movimento normale
-            else if (next != '#' && next != '+' && next != '=') {
+            else if (next != '#' && next != '+') {
                 p.move(dx, dy);
             }
 
@@ -356,12 +356,22 @@ void Levels::run() {
         }
 
         // raccolta item
-        if (current_level->level[p.getY()][p.getX()] >= 'a' &&
-            current_level->level[p.getY()][p.getX()] <= 'z') {
+        if (current_level->level[p.getY()][p.getX()] >= 'A' &&
+            current_level->level[p.getY()][p.getX()] <= 'Z') {
 
             int lives = p.getLives();
-            items.effect_list( current_level->level[p.getY()][p.getX()], &lives,current_level, screen, start,
-                               &time_effect, &bombRadius, &invincible, &p, &EXPmult, &updradius );
+            items.effect_list(
+                current_level->level[p.getY()][p.getX()],
+                &lives,
+                current_level,
+                screen,
+                start,
+                &time_effect,
+                &bombRadius,
+                &invincible,
+                &p,
+                &EXPmult
+            );
             p.setLives(lives);
             current_level->level[p.getY()][p.getX()] = ' ';
 
@@ -433,13 +443,35 @@ void Levels::run() {
                         pExplosionCount++;
                     }
                 
-                    if (c == '+') { c = ' '; p.addScore(20 * EXPmult); break; }
-                    if (c == 'N'){  c = ' '; p.addScore(100 * EXPmult); }
-                    if (c == 'S'){  c = ' '; p.addScore(150 * EXPmult); }
-                    if (c == 'U'){  c = ' '; p.addScore(200 * EXPmult); }
-                    if (c == 'T'){  c = '^'; p.addScore(100 * EXPmult); }
-                    if (c == '^'){  c = ' '; p.addScore(50 * EXPmult); }
-
+                    if (c == '+') {
+                        c = ' ';
+                        break;
+                    }
+                    if (c == 'N') {
+                        c = ' ';
+                        p.addScore(100 * EXPmult);
+                        break;
+                    }
+                    if (c == 'S') {
+                        c = ' ';
+                        p.addScore(150 * EXPmult);
+                        break;
+                    }
+                    if (c == 'U') {
+                        c = ' ';
+                        p.addScore(200 * EXPmult);
+                        break;
+                    }
+                    if (c == 'T') {
+                        c = '^';
+                        p.addScore(100 * EXPmult);
+                        break;
+                    }
+                    if (c == '^') {
+                        c = ' ';
+                        p.addScore(50 * EXPmult);
+                        break;
+                    }
                 }
             }
         
@@ -464,48 +496,6 @@ void Levels::run() {
             pExplosionVisible = true;
             pExplosionTime = time(nullptr);
             pBombPlaced = false;
-        }
-
-        // =======================
-        // ESPLOSIONE BOMBA PLAYER
-        // =======================
-        if (pExplosionVisible) {
-            wattron(screen, COLOR_PAIR(3));
-
-            for (int i = 0; i < pExplosionCount; i++) {
-                mvwprintw(screen,
-                          pExplosionY[i] + 1,
-                          pExplosionX[i] + 1,
-                          "*");
-            }
-
-            wattroff(screen, COLOR_PAIR(3));
-
-            if (time(nullptr) - pExplosionTime >= 1) {
-                pExplosionVisible = false;
-                pExplosionCount = 0;
-            }
-        }
-
-        // =======================
-        // ESPLOSIONE BOMBA U
-        // =======================
-        if (uExplosionVisible) {
-            wattron(screen, COLOR_PAIR(3));
-
-            for (int i = 0; i < uExplosionCount; i++) {
-                mvwprintw(screen,
-                          uExplosionY[i] + 1,
-                          uExplosionX[i] + 1,
-                          "H");
-            }
-
-            wattroff(screen, COLOR_PAIR(3));
-
-            if (time(nullptr) - uExplosionTime >= 1) {
-                uExplosionVisible = false;
-                uExplosionCount = 0;
-            }
         }
 
         // =====================
@@ -542,17 +532,29 @@ void Levels::run() {
                 // =====================
                 if (enemy == 'U' && !uBombPlaced) {
                     int r = rand() % 100;
-                    if (r < 2) { // 2% per tick
-                        uBombPlaced = true;
-                        uBombX = x;
-                        uBombY = y;
-                        uBombTime = time(nullptr);
-                        uBombDelay = 2 + rand() % 3; // 2–4 secondi
-                        current_level->level[y][x] = '=';
-                        continue;
+                    if (r < 2) {
+                    
+                        // verifica che la cella di destinazione sia libera
+                        if (current_level->level[ny][nx] == ' ') {
+                        
+                            uBombPlaced = true;
+                            uBombX = x;
+                            uBombY = y;
+                            uBombTime = time(nullptr);
+                            uBombDelay = 2 + rand() % 3;
+                        
+                            // lascia la bomba nella cella vecchia
+                            current_level->level[y][x] = '=';
+                        
+                            // U si muove
+                            current_level->level[ny][nx] = 'U';
+                        
+                            continue;
+                        }
+                        // se non può muoversi → NON piazza la bomba
                     }
                 }
-            
+          
                 // =====================
                 // COLLISIONE COL PLAYER
                 // =====================
@@ -581,15 +583,14 @@ void Levels::run() {
         if (enemySTick >= enemy_s_delay) enemySTick = 0;
 
         // =======================
-        // ESPLOSIONE BOMBA NEMICO U
+        // ESPLOSIONE BOMBA U
         // =======================
         if (uBombPlaced && time(nullptr) - uBombTime >= uBombDelay) {
         
             uExplosionCount = 0;
         
-            // centro esplosione
+            // centro
             current_level->level[uBombY][uBombX] = ' ';
-        
             uExplosionX[uExplosionCount] = uBombX;
             uExplosionY[uExplosionCount] = uBombY;
             uExplosionCount++;
@@ -598,44 +599,56 @@ void Levels::run() {
             int dy4[4] = {0, 0, 1, -1};
         
             for (int d = 0; d < 4; d++) {
-                int ny = uBombY + dy4[d];
-                int nx = uBombX + dx4[d];
-            
-                if (!inBounds(ny, nx)) continue;
-            
-                char &c = current_level->level[ny][nx];
-            
-                // muro indistruttibile
-                if (c == '#') continue;
-            
-                // muro distruttibile
-                if (c == '+') {
-                    c = ' ';
+                for (int r = 1; r <= uBombRadius; r++) {
+                
+                    int ny = uBombY + dy4[d] * r;
+                    int nx = uBombX + dx4[d] * r;
+                
+                    if (!inBounds(ny, nx)) break;
+                
+                    char &c = current_level->level[ny][nx];
+                
+                    // muro indistruttibile
+                    if (c == '#')
+                        break;
+                
+                    // muro distruttibile
+                    if (c == '+') {
+                        c = ' ';
+                        uExplosionX[uExplosionCount] = nx;
+                        uExplosionY[uExplosionCount] = ny;
+                        uExplosionCount++;
+                        break;
+                    }
+                
+                    // cella libera
+                    uExplosionX[uExplosionCount] = nx;
+                    uExplosionY[uExplosionCount] = ny;
+                    uExplosionCount++;
                 }
-            
-                // danno SOLO al player
-
-                bool damagedThisExplosion = false;
+            }
+        
+            // danno al player
+            for (int i = 0; i < uExplosionCount; i++) {
+                if (uExplosionX[i] == p.getX() &&
+                    uExplosionY[i] == p.getY()) {
                     
-                if (!invincible && !damagedThisExplosion) {
-                    p.loseLife();
-                    invincible = true;
-                    damagedThisExplosion = true;
-                    blinkCounter = 0;
-                    blinkTick = 0;
+                    if (!invincible) {
+                        p.loseLife();
+                        invincible = true;
+                        blinkCounter = 0;
+                        blinkTick = 0;
+                    }
+                    break;
                 }
-            
-                uExplosionX[uExplosionCount] = nx;
-                uExplosionY[uExplosionCount] = ny;
-                uExplosionCount++;
             }
         
             uExplosionVisible = true;
             uExplosionTime = time(nullptr);
-        
-            // IMPORTANTISSIMO
             uBombPlaced = false;
         }
+
+
 
         int idx = current_level->index;
 
@@ -702,7 +715,7 @@ void Levels::run() {
             time_left = 0;
 
         if (time_effect && time(nullptr) >= time_effect) {
-            items.reseteffects(&bombRadius, &invincible, &EXPmult, &updradius);
+            items.reseteffects(&bombRadius, &invincible, &EXPmult);
             time_effect = 0;
         }
 
@@ -715,10 +728,61 @@ void Levels::run() {
 
         printscreen(current_level, screen);
 
+        /* HUD */
         mvwprintw(screen, 24, 3,  "Punti: %d", p.getScore());
         mvwprintw(screen, 24, 16, "Vite: %d",  p.getLives());
         mvwprintw(screen, 24, 29, "Tempo: %d", (int)time_left);
         mvwprintw(screen, 0, 2, "Livello: %d", lvl + 1);
+
+        // =======================
+        // ESPLOSIONE BOMBA PLAYER
+        // =======================
+        if (pExplosionVisible) {
+            wattron(screen, COLOR_PAIR(3));
+
+            for (int i = 0; i < pExplosionCount; i++) {
+                mvwprintw(screen,
+                          pExplosionY[i] + 1,
+                          pExplosionX[i] + 1,
+                          "*");
+            }
+
+            wattroff(screen, COLOR_PAIR(3));
+
+            if (time(nullptr) - pExplosionTime >= 1) {
+                pExplosionVisible = false;
+                pExplosionCount = 0;
+            }
+        }
+
+        // =======================
+        // ESPLOSIONE BOMBA U
+        // =======================
+        if (uExplosionVisible) {
+            wattron(screen, COLOR_PAIR(3));
+
+            for (int i = 0; i < uExplosionCount; i++) {
+                mvwprintw(screen,
+                          uExplosionY[i] + 1,
+                          uExplosionX[i] + 1,
+                          "H");
+            }
+
+            wattroff(screen, COLOR_PAIR(3));
+
+            if (time(nullptr) - uExplosionTime >= 1) {
+                uExplosionVisible = false;
+                uExplosionCount = 0;
+            }
+        }
+
+        /* PLAYER SEMPRE DOPO */
+        wattron(screen, COLOR_PAIR(2));
+        mvwprintw(screen, p.getY() + 1, p.getX() + 1, "%c", playerChar);
+        wattroff(screen, COLOR_PAIR(2));
+
+        wrefresh(screen);
+
 
         if (levelCleared[current_level->index]) {
             mvwprintw(screen, 0, 14, "[CLEAR]");

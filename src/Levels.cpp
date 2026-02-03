@@ -191,6 +191,7 @@ void Levels::run() {
     time_t time_effect = 0;
 
     int EXPmult = 1;
+    bool updradius = false;
 
     // tick
     int playerTick = 0;
@@ -355,22 +356,12 @@ void Levels::run() {
         }
 
         // raccolta item
-        if (current_level->level[p.getY()][p.getX()] >= 'A' &&
-            current_level->level[p.getY()][p.getX()] <= 'Z') {
+        if (current_level->level[p.getY()][p.getX()] >= 'a' &&
+            current_level->level[p.getY()][p.getX()] <= 'z') {
 
             int lives = p.getLives();
-            items.effect_list(
-                current_level->level[p.getY()][p.getX()],
-                &lives,
-                current_level,
-                screen,
-                start,
-                &time_effect,
-                &bombRadius,
-                &invincible,
-                &p,
-                &EXPmult
-            );
+            items.effect_list( current_level->level[p.getY()][p.getX()], &lives,current_level, screen, start,
+                               &time_effect, &bombRadius, &invincible, &p, &EXPmult, &updradius );
             p.setLives(lives);
             current_level->level[p.getY()][p.getX()] = ' ';
 
@@ -442,12 +433,12 @@ void Levels::run() {
                         pExplosionCount++;
                     }
                 
-                    if (c == '+') { c = ' '; break; }
-                    if (c == 'N')  c = ' '; p.addScore(100 * EXPmult); 
-                    if (c == 'S')  c = ' '; p.addScore(150 * EXPmult); 
-                    if (c == 'U')  c = ' '; p.addScore(200 * EXPmult); 
-                    if (c == 'T')  c = '^'; p.addScore(100 * EXPmult); 
-                    if (c == '^')  c = ' '; p.addScore(50 * EXPmult); 
+                    if (c == '+') { c = ' '; p.addScore(20 * EXPmult); break; }
+                    if (c == 'N'){  c = ' '; p.addScore(100 * EXPmult); }
+                    if (c == 'S'){  c = ' '; p.addScore(150 * EXPmult); }
+                    if (c == 'U'){  c = ' '; p.addScore(200 * EXPmult); }
+                    if (c == 'T'){  c = '^'; p.addScore(100 * EXPmult); }
+                    if (c == '^'){  c = ' '; p.addScore(50 * EXPmult); }
 
                 }
             }
@@ -711,7 +702,7 @@ void Levels::run() {
             time_left = 0;
 
         if (time_effect && time(nullptr) >= time_effect) {
-            items.reseteffects(&bombRadius, &invincible, &EXPmult);
+            items.reseteffects(&bombRadius, &invincible, &EXPmult, &updradius);
             time_effect = 0;
         }
 

@@ -2,11 +2,15 @@
 #include <curses.h>
 #include <cstring>
 #include <ctime>
+#include <chrono>
 using namespace std;
 
 double Menu::nowSec() {
-    return (double)clock() / CLOCKS_PER_SEC;
+    using namespace std::chrono;
+    static const auto t0 = steady_clock::now();
+    return duration<double>(steady_clock::now() - t0).count();
 }
+
 
 void Menu::initLogo() { // Inizializza il titolo
     const char* logo[] = { // Titolo in ascii art

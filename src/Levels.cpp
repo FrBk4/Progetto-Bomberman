@@ -96,14 +96,14 @@ map* Levels::genlevels() {  //questa funzione genera i 5 livelli e ritorna un ar
                         int r = rand()%100;
 
                         if (r < 50) {              // nemico lento
-                            node->level[y][x] = 'N';
+                            node->level[y][x] = '~';
                         }
                         else if (r < 70) {       // nemico veloce
-                            node->level[y][x] = 'S';
+                            node->level[y][x] = '$';
                         } else if (r < 90) {
-                            node->level[y][x] = 'T'; // nemico tank
+                            node->level[y][x] = '%'; // nemico tank
                         } else if (r < 99 && !bplaced) {
-                            node->level[y][x] = 'U'; // nemico bomberman
+                            node->level[y][x] = '&'; // nemico bomberman
                             bplaced = true;
                         }
                     }
@@ -192,8 +192,8 @@ void Levels::run() {
     init_pair(3, COLOR_RED, COLOR_BLACK);
     init_pair(2, COLOR_CYAN, COLOR_BLACK);
 
-    time_t start = time(nullptr);
-    time_t time_left = 100;
+    double lastTime = nowSec();   // tempo precedente
+    double time_left = 100.0;    // secondi di gioco
     time_t time_effect = 0;
 
     int EXPmult = 1; //valori gestione effetti
@@ -207,9 +207,12 @@ void Levels::run() {
 
     // tick
     int playerTick = 0;
-    int enemyNTick = 0;
-    int enemySTick = 0;
     const int player_tick_delay = 1;
+
+    // timer
+    double lastEnemyN = nowSec();
+    double lastEnemyS = nowSec();
+
 
     // invincibilità
     bool invincible = false;
@@ -275,16 +278,14 @@ void Levels::run() {
         int dx = 0, dy = 0;
 
         playerTick++;
-        enemyNTick++;
-        enemySTick++;
 
         // difficoltà nemici
-        int enemy_n_delay = 500 - current_level->index * 150;
-        if (enemy_n_delay < 150) enemy_n_delay = 150;
+        double enemy_n_delay = 0.5 - current_level->index * 0.1;
+        if (enemy_n_delay < 0.15) enemy_n_delay = 0.15;
 
-        int enemy_s_delay = 250 - current_level->index * 40;
-        if (enemy_s_delay < 50) enemy_s_delay = 50;
-
+        double enemy_s_delay = 0.25 - current_level->index * 0.05;
+        if (enemy_s_delay < 0.05) enemy_s_delay = 0.05;
+            
         // INPUT
         switch (ch) {
             case 27: // ESC
@@ -310,7 +311,6 @@ void Levels::run() {
                     current_level->level[pBombY][pBombX] = 'O';
                     }
                 break;
-
 
             case 'p': case 'P': {
                 time_t menu_span = time(nullptr);
@@ -383,7 +383,7 @@ void Levels::run() {
             char next = current_level->level[ny][nx];
 
             // player sul nemico
-            if (next == 'N' || next == 'S' || next == 'T' || next == '^' || next == 'U') {
+            if (next == '~' || next == '$' || next == '%' || next == '^' || next == '&') {
                 if (!invincible && !invincible_effect) {
                     p.loseLife();
                     invincible = true;
@@ -404,9 +404,9 @@ void Levels::run() {
         if (current_level->level[p.getY()][p.getX()] >= 'a' &&
             current_level->level[p.getY()][p.getX()] <= 'z') {
 
-            items.effect_list( current_level->level[p.getY()][p.getX()], current_level, screen, start,
-                &time_effect, &bombRadius, &invincible_effect, &p, &EXPmult, &updradius, affected );
-            effect = current_level->level[p.getY()][p.getX()];
+            items.effect_list( current_level->level[p.getY()][p.getX()], current_level, screen, time(nullptr),
+                &time_effect, &bombRadius, &invincible_effect, &p, &EXPmult, &updradius, affected);
+
             current_level->level[p.getY()][p.getX()] = ' ';
 
             wattron(screen, COLOR_PAIR(2));
@@ -483,19 +483,19 @@ void Levels::run() {
                     }
 
                     if (c>='A'&&c<='Z') {
-                        if (c == 'N') {
+                        if (c == '~') {
                             //c = ' ';
                             p.addScore(100 * EXPmult);
                         }
-                        else if (c == 'S') {
+                        else if (c == '$') {
                             //c = ' ';
                             p.addScore(150 * EXPmult);
                         }
-                        else if (c == 'U') {
+                        else if (c == '&') {
                             //c = ' ';
                             p.addScore(200 * EXPmult);
                         }
-                        else if (c == 'T') {
+                        else if (c == '%') {
                             c = '^';
                             p.addScore(100 * EXPmult);
                         }
@@ -536,21 +536,27 @@ void Levels::run() {
         // =====================
         // MOVIMENTO NEMICI
         // =====================
+
+        double now = nowSec();
+
+        bool canMoveN = (now - lastEnemyN >= enemy_n_delay);
+        bool canMoveS = (now - lastEnemyS >= enemy_s_delay);
+
         for (int y = 1; y < 22; y++) {
             for (int x = 1; x < 42; x++) {
 
                 char enemy = current_level->level[y][x];
 
-                if (enemy != 'N' && enemy != 'S' && enemy != 'T' &&
-                    enemy != '^' && enemy != 'U')
+                if (enemy != '~' && enemy != '$' && enemy != '%' &&
+                    enemy != '^' && enemy != '&')
                     continue;
 
                 // velocità diverse
-                if (enemy == 'N' && enemyNTick < enemy_n_delay) continue;
-                if (enemy == 'S' && enemySTick < enemy_s_delay) continue;
-                if (enemy == 'T' && enemyNTick < enemy_n_delay) continue;
-                if (enemy == '^' && enemySTick < enemy_s_delay) continue;
-                if (enemy == 'U' && enemySTick < enemy_s_delay) continue;
+                if ((enemy == '~' || enemy == '%') && !canMoveN)
+                    continue;
+
+                if ((enemy == '$' || enemy == '^' || enemy == '&') && !canMoveS)
+                    continue;
 
                 int dir = rand() % 4;
                 int nx = x, ny = y;
@@ -565,7 +571,7 @@ void Levels::run() {
                 // =====================
                 // NEMICO U: piazza bomba
                 // =====================
-                if (enemy == 'U' && !uBombPlaced) {
+                if (enemy == '&' && !uBombPlaced) {
                     int r = rand() % 100;
                     if (r < 2) {
 
@@ -582,7 +588,7 @@ void Levels::run() {
                             current_level->level[y][x] = '=';
 
                             // U si muove
-                            current_level->level[ny][nx] = 'U';
+                            current_level->level[ny][nx] = '&';
 
                             continue;
                         }
@@ -613,9 +619,9 @@ void Levels::run() {
             }
         }
 
-        // reset tick
-        if (enemyNTick >= enemy_n_delay) enemyNTick = 0;
-        if (enemySTick >= enemy_s_delay) enemySTick = 0;
+        if (canMoveN) lastEnemyN = now;
+        if (canMoveS) lastEnemyS = now;
+
 
         // =======================
         // ESPLOSIONE BOMBA U
@@ -752,20 +758,21 @@ void Levels::run() {
             // =======================
             // TEMPO
             // =======================
-            time_t now = time(nullptr);
-            time_left -= (now - start);
-            start = now;
+            double currentTime = nowSec();
+            double delta = currentTime - lastTime;
+            lastTime = currentTime;
 
-            if (time_left < 0)
-                time_left = 0;
+            time_left -= delta;
+            if (time_left < 0.0)
+                time_left = 0.0;
 
             if (time_effect && time(nullptr) >= time_effect) {
                 items.reseteffects(screen, &bombRadius, &invincible_effect, &EXPmult, &updradius);
                 time_effect = 0;
                 effect = 'a';
             }
-
-            if (p.getLives() <= 0 || time_left <= 0) ingame = false;
+            if (p.getLives() <= 0 || time_left <= 0.0)
+                ingame = false;
 
             // =======================
             // RENDER
@@ -823,7 +830,7 @@ void Levels::run() {
                 }
             }
 
-            /* PLAYER SEMPRE DOPO */
+            /* player dopo */
             wattron(screen, COLOR_PAIR(2));
             mvwprintw(screen, p.getY() + 1, p.getX() + 1, "%c", playerChar);
             wattroff(screen, COLOR_PAIR(2));
@@ -888,4 +895,4 @@ void Levels::run() {
 
         delwin(screen);
 
-    }
+}

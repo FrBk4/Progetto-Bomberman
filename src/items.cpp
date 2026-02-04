@@ -13,7 +13,7 @@ void Itemlist :: effect_list(char effect, map* level, WINDOW* screen, time_t sta
     switch (effect) {
 
         case 'b':  //incrementatore di raggio - 10s
-            if ( *time_effect == 0 && !*updradius) {
+            if (!*updradius) {
                 if (*radius < 2) *radius+=1;
                 *time_effect = time(nullptr) + 10;
             }
@@ -37,16 +37,14 @@ void Itemlist :: effect_list(char effect, map* level, WINDOW* screen, time_t sta
             break;
 
         case 'd': //defender: ti rende invincibile per 10 s
-            if ( *time_effect == 0) {
                 *invincible = true;
                 *time_effect = time(nullptr) + 10;
-            }
             break;
 
         case 'k': //killer, rarissimo: uccide tutti i nemici del livello corrente (clearer del livello)
             for (int y = 0; y< 23; y++)
                 for (int x = 0; x < 43; x++)
-                    if (level->level[y][x]=='N' || level->level[y][x]=='S') {
+                    if ((level->level[y][x]>='A' && level->level[y][x]<='Z')||level->level[y][x]=='^') {
                         if (level->level[y][x]=='N') p->addScore(100);
                         if (level->level[y][x]=='S') p->addScore(150);
                         if (level->level[y][x] == 'U')  p->addScore(200 * *mult);
@@ -60,10 +58,8 @@ void Itemlist :: effect_list(char effect, map* level, WINDOW* screen, time_t sta
             break;
 
         case 'e': //EXP multiplier: per 10 secondi guadagni punti doppi
-            if ( *time_effect == 0) {
                 *mult = 2;
                 *time_effect = time(nullptr) +10;
-            }
 
         case 'r': //permanent radius
            *radius = 2;
@@ -82,7 +78,7 @@ char Itemlist :: spawnrate(int prob) { //funzione che genera item casualmente su
     if (q<prob){
        int p = rand() % 100;
 
-        if (p<33) //radius: prob 33%
+        if(p<33) //radius: prob 33%
             return 'b';
         if (p<53) //medikit: prob 20%
             return 'm';

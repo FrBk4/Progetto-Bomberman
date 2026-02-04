@@ -762,6 +762,7 @@ void Levels::run() {
             if (time_effect && time(nullptr) >= time_effect) {
                 items.reseteffects(screen, &bombRadius, &invincible_effect, &EXPmult, &updradius);
                 time_effect = 0;
+                effect = 'a';
             }
 
             if (p.getLives() <= 0 || time_left <= 0) ingame = false;

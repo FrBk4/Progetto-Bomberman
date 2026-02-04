@@ -208,8 +208,8 @@ void Levels::run() {
     init_pair(3, COLOR_RED, COLOR_BLACK);
     init_pair(2, COLOR_CYAN, COLOR_BLACK);
 
-    double lastTime = nowSec();   // tempo precedente
-    double time_left = 100.0;    // secondi di gioco
+    time_t start = time(nullptr);
+    time_t time_left = 100;
     time_t time_effect = 0;
 
     int EXPmult = 1; //valori gestione effetti
@@ -223,12 +223,9 @@ void Levels::run() {
 
     // tick
     int playerTick = 0;
+    int enemyNTick = 0;
+    int enemySTick = 0;
     const int player_tick_delay = 1;
-
-    // timer
-    double lastEnemyN = nowSec();
-    double lastEnemyS = nowSec();
-
 
     // invincibilità
     bool invincible = false;
@@ -294,14 +291,16 @@ void Levels::run() {
         int dx = 0, dy = 0;
 
         playerTick++;
+        enemyNTick++;
+        enemySTick++;
 
         // difficoltà nemici
-        double enemy_n_delay = 0.5 - current_level->index * 0.1;
-        if (enemy_n_delay < 0.15) enemy_n_delay = 0.15;
+        int enemy_n_delay = 500 - current_level->index * 150;
+        if (enemy_n_delay < 150) enemy_n_delay = 150;
 
-        double enemy_s_delay = 0.25 - current_level->index * 0.05;
-        if (enemy_s_delay < 0.05) enemy_s_delay = 0.05;
-            
+        int enemy_s_delay = 250 - current_level->index * 40;
+        if (enemy_s_delay < 50) enemy_s_delay = 50;
+
         // INPUT
         switch (ch) {
             case 27: // ESC
@@ -327,6 +326,7 @@ void Levels::run() {
                     current_level->level[pBombY][pBombX] = 'O';
                     }
                 break;
+
 
             case 'p': case 'P': {
                 time_t menu_span = time(nullptr);
@@ -420,9 +420,9 @@ void Levels::run() {
         if (current_level->level[p.getY()][p.getX()] >= 'a' &&
             current_level->level[p.getY()][p.getX()] <= 'z') {
 
-            items.effect_list( current_level->level[p.getY()][p.getX()], current_level, screen, time(nullptr),
-                &time_effect, &bombRadius, &invincible_effect, &p, &EXPmult, &updradius, affected);
-
+            items.effect_list( current_level->level[p.getY()][p.getX()], current_level, screen, start,
+                &time_effect, &bombRadius, &invincible_effect, &p, &EXPmult, &updradius, affected );
+            effect = current_level->level[p.getY()][p.getX()];
             current_level->level[p.getY()][p.getX()] = ' ';
 
             wattron(screen, COLOR_PAIR(2));
@@ -498,7 +498,7 @@ void Levels::run() {
                         break;
                     }
 
-                    if (c == 'N' || c == 'S' || c == 'T' || c == 'U' || c == '^'){
+                    if (c>='A'&&c<='Z') {
                         if (c == 'N') {
                             //c = ' ';
                             p.addScore(100 * EXPmult);
@@ -552,12 +552,6 @@ void Levels::run() {
         // =====================
         // MOVIMENTO NEMICI
         // =====================
-
-        double now = nowSec();
-
-        bool canMoveN = (now - lastEnemyN >= enemy_n_delay);
-        bool canMoveS = (now - lastEnemyS >= enemy_s_delay);
-
         for (int y = 1; y < 22; y++) {
             for (int x = 1; x < 42; x++) {
 
@@ -568,11 +562,11 @@ void Levels::run() {
                     continue;
 
                 // velocità diverse
-                if ((enemy == 'N' || enemy == 'T') && !canMoveN)
-                    continue;
-
-                if ((enemy == 'S' || enemy == '^' || enemy == 'U') && !canMoveS)
-                    continue;
+                if (enemy == 'N' && enemyNTick < enemy_n_delay) continue;
+                if (enemy == 'S' && enemySTick < enemy_s_delay) continue;
+                if (enemy == 'T' && enemyNTick < enemy_n_delay) continue;
+                if (enemy == '^' && enemySTick < enemy_s_delay) continue;
+                if (enemy == 'U' && enemySTick < enemy_s_delay) continue;
 
                 int dir = rand() % 4;
                 int nx = x, ny = y;
@@ -635,9 +629,9 @@ void Levels::run() {
             }
         }
 
-        if (canMoveN) lastEnemyN = now;
-        if (canMoveS) lastEnemyS = now;
-
+        // reset tick
+        if (enemyNTick >= enemy_n_delay) enemyNTick = 0;
+        if (enemySTick >= enemy_s_delay) enemySTick = 0;
 
         // =======================
         // ESPLOSIONE BOMBA U
@@ -774,21 +768,20 @@ void Levels::run() {
             // =======================
             // TEMPO
             // =======================
-            double currentTime = nowSec();
-            double delta = currentTime - lastTime;
-            lastTime = currentTime;
+            time_t now = time(nullptr);
+            time_left -= (now - start);
+            start = now;
 
-            time_left -= delta;
-            if (time_left < 0.0)
-                time_left = 0.0;
+            if (time_left < 0)
+                time_left = 0;
 
             if (time_effect && time(nullptr) >= time_effect) {
                 items.reseteffects(screen, &bombRadius, &invincible_effect, &EXPmult, &updradius);
                 time_effect = 0;
                 effect = 'a';
             }
-            if (p.getLives() <= 0 || time_left <= 0.0)
-                ingame = false;
+
+            if (p.getLives() <= 0 || time_left <= 0) ingame = false;
 
             // =======================
             // RENDER
@@ -846,7 +839,7 @@ void Levels::run() {
                 }
             }
 
-            /* player dopo */
+            /* PLAYER SEMPRE DOPO */
             wattron(screen, COLOR_PAIR(2));
             mvwprintw(screen, p.getY() + 1, p.getX() + 1, "%c", playerChar);
             wattroff(screen, COLOR_PAIR(2));
@@ -911,4 +904,4 @@ void Levels::run() {
 
         delwin(screen);
 
-}
+    }

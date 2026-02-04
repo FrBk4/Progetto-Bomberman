@@ -164,7 +164,7 @@ void Levels::printscreen(map* level, WINDOW* screen) {
             switch (level->level[y][x]) {
 
                 case '#':
-                    mvwaddch(screen, y+1, x+1, ACS_BLOCK);
+                    mvwaddch(screen, y+1, x+1, ' ' | A_REVERSE);
                     break;
 
                 case '+':

@@ -8,7 +8,7 @@
 
 using namespace std;
 
-void Itemlist :: effect_list(char effect, int* player_lives, map* level, WINDOW* screen, time_t start,
+void Itemlist :: effect_list(char effect, map* level, WINDOW* screen, time_t start,
                               time_t* time_effect, int* radius, bool *invincible, Player* p, int* mult, bool *updradius) {
     switch (effect) {
 
@@ -20,7 +20,7 @@ void Itemlist :: effect_list(char effect, int* player_lives, map* level, WINDOW*
             break;
 
         case 'm':  //medikit - ripristina una vita
-            if (*player_lives < 3) *player_lives += 1;
+            if (p->getLives() < 3) p->setLives(p->getLives()+1);
             break;
 
         case 'w': //wallbreaker (rarissimo) - distrugge tutte le mura distruttibili del livello
@@ -73,6 +73,8 @@ void Itemlist :: effect_list(char effect, int* player_lives, map* level, WINDOW*
 
 char Itemlist :: spawnrate(int prob) { //funzione che genera item casualmente sulla base di un valore probabilistico
 
+    srand(time(nullptr));
+
     int q = rand() % 100;
 
     if (q<prob){
@@ -100,8 +102,8 @@ char Itemlist :: spawnrate(int prob) { //funzione che genera item casualmente su
 void Itemlist :: hideitems(map* level, WINDOW* screen) { //nasconde la natura degli item del livello corrente
     for (int y = 0; y < 23; y++)
         for (int x = 0; x < 43; x++)
-            if (level->level[y][x]>='a' && level->level[y][x]<='z' )
-                mvwprintw(screen, y+1, x+1, "?");
+            if (level->level[y][x]>='a' && level->level[y][x]<='z')
+              mvwprintw(screen, y+1, x+1, "?");
 }
 
 void Itemlist :: reseteffects(int *radius, bool* invincible, int* mult, bool* updradius) {

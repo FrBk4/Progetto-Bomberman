@@ -9,7 +9,8 @@
 #include <clocale>
 
 #define DESTR_RATIO (10+(node->index*4))
-#define ITEMS_RATIO (node->index+2)
+#define ITEMS_RATIO 95
+#define ENEMY_RATIO (1+(node->index*2))
 
 using namespace std;
 
@@ -72,32 +73,31 @@ map* Levels::genlevels() {  //questa funzione genera i 5 livelli e ritorna un ar
 
     for (map* node = head; node; node = node->next) {
 
-        int placed = 0;
         bool bplaced = false;
 
-        for (int y = 1; y < 22 && placed < 6; y++) {
-            for (int x = 1; x < 42 && placed < 6; x++) {
+        for (int y = 1; y < 22; y++) {
+            for (int x = 1; x < 42; x++) {
                 
                 if (x <= 5 && y <= 5) // safe zone
                     continue;
 
                 if (node->level[y][x] == ' ') {
-                    int r = rand() % 100;
+                    int eprob = rand() % 100;
 
-                    if (r < 15) {              // nemico lento
-                        node->level[y][x] = 'N';
-                        placed++;
-                    }
-                    else if (r == 99) {       // nemico veloce
-                        node->level[y][x] = 'S';
-                        placed++;
-                    } else if (r < 15) {
-                        node->level[y][x] = 'T'; // nemico tank
-                        placed++;
-                    } else if (r < 99 && !bplaced) {
-                        node->level[y][x] = 'U'; // nemico bomberman
-                        bplaced = true;
-                        placed++;
+                    if (eprob < ENEMY_RATIO ){
+                        int r = rand()%100;
+
+                        if (r < 50) {              // nemico lento
+                            node->level[y][x] = 'N';
+                        }
+                        else if (r < 70) {       // nemico veloce
+                            node->level[y][x] = 'S';
+                        } else if (r < 90) {
+                            node->level[y][x] = 'T'; // nemico tank
+                        } else if (r < 99 && !bplaced) {
+                            node->level[y][x] = 'U'; // nemico bomberman
+                            bplaced = true;
+                        }
                     }
                 }
             }
@@ -176,7 +176,6 @@ void Levels::printscreen(map* level, WINDOW* screen) {
 
 
 void Levels::run() {
-
     clear();
     refresh();
     setlocale(LC_ALL, "");
@@ -251,7 +250,7 @@ void Levels::run() {
     int uExplosionCount = 0;
 
     /* ================= GAME LOOP ================= */
-        while (ingame) {
+    while (ingame) {
         nodelay(screen, true);
         keypad(screen, true);
         napms(1); // evita saturazione CPU
@@ -289,15 +288,15 @@ void Levels::run() {
             case 'e': case 'E':
                 if (!pBombPlaced &&
                     current_level->level[p.getY()][p.getX()] == ' ') {
-                    
+
                     pBombPlaced = true;
                     pBombX = p.getX();
                     pBombY = p.getY();
                     pBombTime = time(nullptr);
-                    current_level->level[pBombY][pBombX] = 'o';
-                }
+                    current_level->level[pBombY][pBombX] = 'O';
+                    }
                 break;
-            
+
 
             case 'p': case 'P': {
                 time_t menu_span = time(nullptr);
@@ -330,7 +329,7 @@ void Levels::run() {
             }
         }
 
-                // movimento player
+        // movimento player
         if ((dx || dy) && playerTick >= player_tick_delay) {
 
             int nx = p.getX() + dx;
@@ -360,16 +359,14 @@ void Levels::run() {
         if (current_level->level[p.getY()][p.getX()] >= 'a' &&
             current_level->level[p.getY()][p.getX()] <= 'z') {
 
-            int lives = p.getLives();
-            items.effect_list( current_level->level[p.getY()][p.getX()], &lives, current_level, screen, start,
+            items.effect_list( current_level->level[p.getY()][p.getX()], current_level, screen, start,
                 &time_effect, &bombRadius, &invincible, &p, &EXPmult, &updradius );
-            p.setLives(lives);
             current_level->level[p.getY()][p.getX()] = ' ';
 
             wattron(screen, COLOR_PAIR(2));
             mvwprintw(screen, p.getY() + 1, p.getX() + 1, "%c", playerChar);
             wattroff(screen, COLOR_PAIR(2));
-        }
+            }
 
         // cambio livello
         if (current_level->level[p.getY()][p.getX()] == '<') {
@@ -404,75 +401,76 @@ void Levels::run() {
         // ESPLOSIONE BOMBA PLAYER
         // =======================
         if (pBombPlaced && time(nullptr) - pBombTime >= 2) {
-        
+
             pExplosionCount = 0;
-        
+
             // centro
             pExplosionX[pExplosionCount] = pBombX;
             pExplosionY[pExplosionCount] = pBombY;
             pExplosionCount++;
-        
+
             current_level->level[pBombY][pBombX] = ' ';
-        
+
             int dx4[4] = {1, -1, 0, 0};
             int dy4[4] = {0, 0, 1, -1};
-        
+
             for (int d = 0; d < 4; d++) {
                 for (int r = 1; r <= bombRadius; r++) {
-                
+
                     int ny = pBombY + dy4[d] * r;
                     int nx = pBombX + dx4[d] * r;
-                
+
                     if (!inBounds(ny, nx)) break;
-                
+
                     char &c = current_level->level[ny][nx];
                     if (c == '#') break;
-                
+
                     if (pExplosionCount < 32) {
                         pExplosionX[pExplosionCount] = nx;
                         pExplosionY[pExplosionCount] = ny;
                         pExplosionCount++;
                     }
-                
+
                     if (c == '+') {
                         c = ' ';
                         break;
                     }
-                    if (c == 'N') {
-                        c = ' ';
-                        p.addScore(100 * EXPmult);
-                        break;
+
+                    if (c>='A'&&c<='Z') {
+                        if (c == 'N') {
+                            //c = ' ';
+                            p.addScore(100 * EXPmult);
+                        }
+                        else if (c == 'S') {
+                            //c = ' ';
+                            p.addScore(150 * EXPmult);
+                        }
+                        else if (c == 'U') {
+                            //c = ' ';
+                            p.addScore(200 * EXPmult);
+                        }
+                        else if (c == 'T') {
+                            c = '^';
+                            p.addScore(100 * EXPmult);
+                        }
+                        else if (c == '^') {
+                            //c = ' ';
+                            p.addScore(50 * EXPmult);
+                        }
+
+                        c = items.spawnrate(ITEMS_RATIO);
                     }
-                    if (c == 'S') {
-                        c = ' ';
-                        p.addScore(150 * EXPmult);
-                        break;
-                    }
-                    if (c == 'U') {
-                        c = ' ';
-                        p.addScore(200 * EXPmult);
-                        break;
-                    }
-                    if (c == 'T') {
-                        c = '^';
-                        p.addScore(100 * EXPmult);
-                        break;
-                    }
-                    if (c == '^') {
-                        c = ' ';
-                        p.addScore(50 * EXPmult);
-                        break;
-                    }
+
                 }
             }
-        
+
             // danno al player
             bool damagedThisExplosion = false;
 
             for (int i = 0; i < pExplosionCount; i++) {
                 if (pExplosionX[i] == p.getX() &&
                     pExplosionY[i] == p.getY()) {
-                    
+
                     if (!invincible && !damagedThisExplosion) {
                         p.loseLife();
                         invincible = true;
@@ -481,9 +479,9 @@ void Levels::run() {
                         blinkTick = 0;
                     }
                     break;
-                }
+                    }
             }
-        
+
             pExplosionVisible = true;
             pExplosionTime = time(nullptr);
             pBombPlaced = false;
@@ -494,58 +492,58 @@ void Levels::run() {
         // =====================
         for (int y = 1; y < 22; y++) {
             for (int x = 1; x < 42; x++) {
-            
+
                 char enemy = current_level->level[y][x];
-            
+
                 if (enemy != 'N' && enemy != 'S' && enemy != 'T' &&
                     enemy != '^' && enemy != 'U')
                     continue;
-                
+
                 // velocità diverse
                 if (enemy == 'N' && enemyNTick < enemy_n_delay) continue;
                 if (enemy == 'S' && enemySTick < enemy_s_delay) continue;
                 if (enemy == 'T' && enemyNTick < enemy_n_delay) continue;
                 if (enemy == '^' && enemySTick < enemy_s_delay) continue;
                 if (enemy == 'U' && enemySTick < enemy_s_delay) continue;
-                
+
                 int dir = rand() % 4;
                 int nx = x, ny = y;
-                
+
                 if (dir == 0) ny--;
                 if (dir == 1) ny++;
                 if (dir == 2) nx--;
                 if (dir == 3) nx++;
-                
+
                 if (!inBounds(ny, nx)) continue;
-                
+
                 // =====================
                 // NEMICO U: piazza bomba
                 // =====================
                 if (enemy == 'U' && !uBombPlaced) {
                     int r = rand() % 100;
                     if (r < 2) {
-                    
+
                         // verifica che la cella di destinazione sia libera
                         if (current_level->level[ny][nx] == ' ') {
-                        
+
                             uBombPlaced = true;
                             uBombX = x;
                             uBombY = y;
                             uBombTime = time(nullptr);
                             uBombDelay = 2 + rand() % 3;
-                        
+
                             // lascia la bomba nella cella vecchia
                             current_level->level[y][x] = '=';
-                        
+
                             // U si muove
                             current_level->level[ny][nx] = 'U';
-                        
+
                             continue;
                         }
                         // se non può muoversi → NON piazza la bomba
                     }
                 }
-          
+
                 // =====================
                 // COLLISIONE COL PLAYER
                 // =====================
@@ -558,7 +556,7 @@ void Levels::run() {
                     }
                     continue;
                 }
-            
+
                 // =====================
                 // MOVIMENTO NORMALE
                 // =====================
@@ -577,32 +575,32 @@ void Levels::run() {
         // ESPLOSIONE BOMBA U
         // =======================
         if (uBombPlaced && time(nullptr) - uBombTime >= uBombDelay) {
-        
+
             uExplosionCount = 0;
-        
+
             // centro
             current_level->level[uBombY][uBombX] = ' ';
             uExplosionX[uExplosionCount] = uBombX;
             uExplosionY[uExplosionCount] = uBombY;
             uExplosionCount++;
-        
+
             int dx4[4] = {1, -1, 0, 0};
             int dy4[4] = {0, 0, 1, -1};
-        
+
             for (int d = 0; d < 4; d++) {
                 for (int r = 1; r <= uBombRadius; r++) {
-                
+
                     int ny = uBombY + dy4[d] * r;
                     int nx = uBombX + dx4[d] * r;
-                
+
                     if (!inBounds(ny, nx)) break;
-                
+
                     char &c = current_level->level[ny][nx];
-                
+
                     // muro indistruttibile
                     if (c == '#')
                         break;
-                
+
                     // muro distruttibile
                     if (c == '+') {
                         c = ' ';
@@ -611,19 +609,19 @@ void Levels::run() {
                         uExplosionCount++;
                         break;
                     }
-                
+
                     // cella libera
                     uExplosionX[uExplosionCount] = nx;
                     uExplosionY[uExplosionCount] = ny;
                     uExplosionCount++;
                 }
             }
-        
+
             // danno al player
             for (int i = 0; i < uExplosionCount; i++) {
                 if (uExplosionX[i] == p.getX() &&
                     uExplosionY[i] == p.getY()) {
-                    
+
                     if (!invincible) {
                         p.loseLife();
                         invincible = true;
@@ -631,9 +629,9 @@ void Levels::run() {
                         blinkTick = 0;
                     }
                     break;
-                }
+                    }
             }
-        
+
             uExplosionVisible = true;
             uExplosionTime = time(nullptr);
             uBombPlaced = false;
@@ -645,12 +643,12 @@ void Levels::run() {
 
         // se il livello non è ancora stato clearato
         if (!levelCleared[idx] && countEnemies(current_level) == 0) {
-        
+
             levelCleared[idx] = true;   // segna questo livello come completato
-        
+
             // reset vite quando completi un livello
             p.setLives(3);
-        
+
             // controlla se TUTTI i livelli sono stati completati
             bool allCleared = true;
             for (int i = 0; i < 5; i++) {
@@ -659,7 +657,7 @@ void Levels::run() {
                     break;
                 }
             }
-        
+
             // se tutti completati → vittoria
             if (allCleared) {
                 victory = true;
@@ -686,7 +684,7 @@ void Levels::run() {
                 blinkCounter++;
                 blinkTick = 0;
             }
-        
+
             if (blinkCounter >= 16) {   // durata invincibilità
                 invincible = false;
                 blinkCounter = 0;
@@ -694,142 +692,152 @@ void Levels::run() {
             }
         }
 
-
-        // =======================
-        // TEMPO
-        // =======================
-        time_t now = time(nullptr);
-        time_left -= (now - start);
-        start = now;
-
-        if (time_left < 0)
-            time_left = 0;
-
-        if (time_effect && time(nullptr) >= time_effect) {
-            items.reseteffects(&bombRadius, &invincible, &EXPmult, &updradius);
-            time_effect = 0;
-        }
-
-        if (p.getLives() <= 0 || time_left <= 0) ingame = false;
-
-        // =======================
-        // RENDER
-        // =======================
-        werase(screen);
-
-        printscreen(current_level, screen);
-
-        /* HUD */
-        mvwprintw(screen, 24, 3,  "Punti: %d", p.getScore());
-        mvwprintw(screen, 24, 16, "Vite: %d",  p.getLives());
-        mvwprintw(screen, 24, 29, "Tempo: %d", (int)time_left);
-        mvwprintw(screen, 0, 2, "Livello: %d", lvl + 1);
-
-        // =======================
-        // ESPLOSIONE BOMBA PLAYER
-        // =======================
-        if (pExplosionVisible) {
-            wattron(screen, COLOR_PAIR(3));
-
-            for (int i = 0; i < pExplosionCount; i++) {
-                mvwprintw(screen,
-                          pExplosionY[i] + 1,
-                          pExplosionX[i] + 1,
-                          "*");
+        //gestione portali d'accesso a livelli completati
+        for (map* node = Map; node; node = node->next) {
+            if (node->level[1][0] == '<' && !node->previous) {
+                node->level[1][0] = '#';
             }
-
-            wattroff(screen, COLOR_PAIR(3));
-
-            if (time(nullptr) - pExplosionTime >= 1) {
-                pExplosionVisible = false;
-                pExplosionCount = 0;
+            if (node->level[21][42] == '>' && !node->next) {
+                node->level[21][42] = '#';
             }
         }
 
-        // =======================
-        // ESPLOSIONE BOMBA U
-        // =======================
-        if (uExplosionVisible) {
-            wattron(screen, COLOR_PAIR(3));
 
-            for (int i = 0; i < uExplosionCount; i++) {
-                mvwprintw(screen,
-                          uExplosionY[i] + 1,
-                          uExplosionX[i] + 1,
-                          "H");
+            // =======================
+            // TEMPO
+            // =======================
+            time_t now = time(nullptr);
+            time_left -= (now - start);
+            start = now;
+
+            if (time_left < 0)
+                time_left = 0;
+
+            if (time_effect && time(nullptr) >= time_effect) {
+                items.reseteffects(&bombRadius, &invincible, &EXPmult, &updradius);
+                time_effect = 0;
             }
 
-            wattroff(screen, COLOR_PAIR(3));
+            if (p.getLives() <= 0 || time_left <= 0) ingame = false;
 
-            if (time(nullptr) - uExplosionTime >= 1) {
-                uExplosionVisible = false;
-                uExplosionCount = 0;
+            // =======================
+            // RENDER
+            // =======================
+            werase(screen);
+
+            printscreen(current_level, screen);
+
+            /* HUD */
+            mvwprintw(screen, 24, 3,  "Punti: %d", p.getScore());
+            mvwprintw(screen, 24, 16, "Vite: %d",  p.getLives());
+            mvwprintw(screen, 24, 29, "Tempo: %d", (int)time_left);
+            mvwprintw(screen, 0, 2, "Livello: %d", lvl + 1);
+
+            // =======================
+            // ESPLOSIONE BOMBA PLAYER
+            // =======================
+            if (pExplosionVisible) {
+                wattron(screen, COLOR_PAIR(3));
+
+                for (int i = 0; i < pExplosionCount; i++) {
+                    mvwprintw(screen,
+                              pExplosionY[i] + 1,
+                              pExplosionX[i] + 1,
+                              "*");
+                }
+
+                wattroff(screen, COLOR_PAIR(3));
+
+                if (time(nullptr) - pExplosionTime >= 1) {
+                    pExplosionVisible = false;
+                    pExplosionCount = 0;
+                }
             }
+
+            // =======================
+            // ESPLOSIONE BOMBA U
+            // =======================
+            if (uExplosionVisible) {
+                wattron(screen, COLOR_PAIR(3));
+
+                for (int i = 0; i < uExplosionCount; i++) {
+                    mvwprintw(screen,
+                              uExplosionY[i] + 1,
+                              uExplosionX[i] + 1,
+                              "H");
+                }
+
+                wattroff(screen, COLOR_PAIR(3));
+
+                if (time(nullptr) - uExplosionTime >= 1) {
+                    uExplosionVisible = false;
+                    uExplosionCount = 0;
+                }
+            }
+
+            /* PLAYER SEMPRE DOPO */
+            wattron(screen, COLOR_PAIR(2));
+            mvwprintw(screen, p.getY() + 1, p.getX() + 1, "%c", playerChar);
+            wattroff(screen, COLOR_PAIR(2));
+
+            wrefresh(screen);
+
+
+            if (levelCleared[current_level->index]) {
+                mvwprintw(screen, 0, 14, "[CLEAR]");
+            }
+
+        } // fine gameloop
+
+        // bonus tempo se vittoria
+        if (victory && time_left > 0) {
+            p.addScore((int)time_left);
         }
 
-        /* PLAYER SEMPRE DOPO */
-        wattron(screen, COLOR_PAIR(2));
-        mvwprintw(screen, p.getY() + 1, p.getX() + 1, "%c", playerChar);
-        wattroff(screen, COLOR_PAIR(2));
+        // reset input per inserimento nome
+        echo();
+        nocbreak();
+        nodelay(screen, false);
 
-        wrefresh(screen);
+        // schermata finale
+        clear();
 
-
-        if (levelCleared[current_level->index]) {
-            mvwprintw(screen, 0, 14, "[CLEAR]");
+        if (victory) {
+            mvprintw(10, 18, "YOU WIN!");
+            mvprintw(12, 10, "Hai completato tutti i livelli!");
+        } else {
+            mvprintw(10, 18, "GAME OVER");
         }
 
-    } // fine gameloop
+        refresh();
 
-    // bonus tempo se vittoria
-    if (victory && time_left > 0) {
-        p.addScore((int)time_left);
+        // prompt nome (COMUNE a entrambi i casi)
+        char name[32];
+        WINDOW* prompt = newwin(5, 40,
+            getmaxy(stdscr)/2 - 2,
+            getmaxx(stdscr)/2 - 20);
+
+        box(prompt, 0, 0);
+        mvwprintw(prompt, 1, 2, "Inserisci il tuo nome:");
+        wrefresh(prompt);
+
+        wgetnstr(prompt, name, 31);
+        Score::saveScore("Leaderboard.txt", name, p.getScore());
+
+        delwin(prompt);
+
+        // pulizia finale
+        clear();
+        refresh();
+
+        // libera mappe
+        map* tmp;
+        while (Map) {
+            tmp = Map;
+            Map = Map->next;
+            delete tmp;
+        }
+
+        delwin(screen);
+
     }
-
-    // reset input per inserimento nome
-    echo();
-    nocbreak();
-    nodelay(screen, false);
-
-    // schermata finale
-    clear();
-
-    if (victory) {
-        mvprintw(10, 18, "YOU WIN!");
-        mvprintw(12, 10, "Hai completato tutti i livelli!");
-    } else {
-        mvprintw(10, 18, "GAME OVER");
-    }
-
-    refresh();
-
-    // prompt nome (COMUNE a entrambi i casi)
-    char name[32];
-    WINDOW* prompt = newwin(5, 40,
-        getmaxy(stdscr)/2 - 2,
-        getmaxx(stdscr)/2 - 20);
-
-    box(prompt, 0, 0);
-    mvwprintw(prompt, 1, 2, "Inserisci il tuo nome:");
-    wrefresh(prompt);
-
-    wgetnstr(prompt, name, 31);
-    Score::saveScore("Leaderboard.txt", name, p.getScore());
-
-    delwin(prompt);
-
-    // pulizia finale
-    clear();
-    refresh();
-
-    // libera mappe
-    map* tmp;
-    while (Map) {
-        tmp = Map;
-        Map = Map->next;
-        delete tmp;
-    }
-
-    delwin(screen);
-
-}

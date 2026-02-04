@@ -11,7 +11,6 @@ double Menu::nowSec() {
     return duration<double>(steady_clock::now() - t0).count();
 }
 
-
 void Menu::initLogo() { // Inizializza il titolo
     const char* logo[] = { // Titolo in ascii art
         ".:::::::.      ...     .        :  .:::::::.   ,:::::: :::::::..   .        :     :::.    '::.    :::.",
@@ -192,13 +191,14 @@ int Menu::run(const string items[], // Fa runnare tutto il menu e gestisce l'inp
               int countSubt) {
     int selected = 0;
     int key = 0;
+    noecho();
 
     timeout(16);
+    flushinp();
 
     while (true) {
         draw(items, countItems, selected, key, subtitles, countSubt); // Stampa menu e titolo iniziale
 
-        nodelay(stdscr, TRUE); // Non aspetta l'input utente (per far andare avanti a prescindere l'animazione del titolo)
         int ch = getch(); // Input utente
 
         if (ch == int('p')) { // Mostra/nasconde comandi
@@ -217,7 +217,7 @@ int Menu::run(const string items[], // Fa runnare tutto il menu e gestisce l'inp
         else if (ch == KEY_DOWN || ch == 's') {
             selected = (selected + 1) % countItems;
         }
-        else if (ch == KEY_ENTER || ch == '\n' || ch == 13) { // Enter per selezionare
+        else if (ch == KEY_ENTER || ch == '\n' || ch == 13 || ch == 'e' || ch == 'E') { // Enter per selezionare
             if (selected == 0) { // Se l'utente ha selezionato Nuova Partita
                 startBombAnimation(); // Avvia animazione bombe sul titolo
 

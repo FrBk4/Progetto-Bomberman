@@ -8,6 +8,7 @@
 #include "../include/Score.hpp"
 #include <clocale>
 #include <cstring>
+#include <chrono>
 
 #define DESTR_RATIO (10+(node->index*4))
 #define ITEMS_RATIO 95
@@ -20,6 +21,12 @@ Player p(1, 1);
 
 bool inBounds(int y, int x) {
     return y > 0 && y < 22 && x > 0 && x < 42;
+}
+
+double Levels::nowSec() {
+    using namespace std::chrono;
+    static const auto t0 = steady_clock::now();
+    return duration<double>(steady_clock::now() - t0).count();
 }
 
 map* Levels::genlevels() {  //questa funzione genera i 5 livelli e ritorna un array che li contiene come matrici 23x43
@@ -92,7 +99,7 @@ map* Levels::genlevels() {  //questa funzione genera i 5 livelli e ritorna un ar
                             node->level[y][x] = 'N';
                         }
                         else if (r < 70) {       // nemico veloce
-                            node->level[y][x] = ACS_BULLET;
+                            node->level[y][x] = 'S';
                         } else if (r < 90) {
                             node->level[y][x] = 'T'; // nemico tank
                         } else if (r < 99 && !bplaced) {
@@ -265,11 +272,11 @@ void Levels::run() {
         enemySTick++;
 
         // difficoltà nemici
-        int enemy_n_delay = 500 - current_level->index * 150;
-        if (enemy_n_delay < 150) enemy_n_delay = 150;
+        int enemy_n_delay = 1000 - current_level->index * 150;
+        if (enemy_n_delay < 200) enemy_n_delay = 200;
 
-        int enemy_s_delay = 250 - current_level->index * 40;
-        if (enemy_s_delay < 50) enemy_s_delay = 50;
+        int enemy_s_delay = 300 - current_level->index * 40;
+        if (enemy_s_delay < 80) enemy_s_delay = 80;
 
         // INPUT
         switch (ch) {
@@ -324,9 +331,12 @@ void Levels::run() {
                 int startX = (getmaxx(controls) - logoWidth) / 2; // Coordinate di dove si stampa il titolo
                 int startY = 2;
 
+                bool pulse = ((int)(nowSec()) % 2) == 0; // Pulsazione alternata (ogni secondo)
+                if (pulse) wattron(controls, A_BOLD);
                 for (int i = 0; i < logoLines; i++) { // Stampa del titolo
                     mvwprintw(controls, startY + i, startX, "%s", logo[i]);
                 }
+                if (pulse) wattroff(controls, A_BOLD);
 
                 int startY2 = startY + logoLines + 3; // Stampa dei comandi
                 mvwprintw(controls, startY2, 14, "COMANDI DI GIOCO");
@@ -549,9 +559,7 @@ void Levels::run() {
                 // =====================
                 if (enemy == 'U' && !uBombPlaced) {
                     int r = rand() % 100;
-                    int chance = 4 + current_level->index * 2;
-
-                    if (r < chance) {
+                    if (r < 2) {
 
                         // verifica che la cella di destinazione sia libera
                         if (current_level->level[ny][nx] == ' ') {

@@ -3,9 +3,12 @@
 #include <cstring>
 #include <ctime>
 #include <cstdio>
+#include <chrono>
 
-double Leaderboard::nowSec() { // Calcola il tempo (serve per la pulsazione dell'ascii art)
-    return (double)clock() / CLOCKS_PER_SEC;
+double Leaderboard::nowSec() {
+    using namespace std::chrono;
+    static const auto t0 = steady_clock::now();
+    return duration<double>(steady_clock::now() - t0).count();
 }
 
 void Leaderboard::loadFromFile(const char* filename) {

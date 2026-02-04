@@ -21,6 +21,8 @@ public:
 
     void printscreen(map*, WINDOW*);
 
+    double nowSec();
+
     void run();
 };
 

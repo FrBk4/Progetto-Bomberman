@@ -272,11 +272,11 @@ void Levels::run() {
         enemySTick++;
 
         // difficoltà nemici
-        int enemy_n_delay = 1000 - current_level->index * 150;
-        if (enemy_n_delay < 200) enemy_n_delay = 200;
+        int enemy_n_delay = 500 - current_level->index * 150;
+        if (enemy_n_delay < 150) enemy_n_delay = 150;
 
-        int enemy_s_delay = 300 - current_level->index * 40;
-        if (enemy_s_delay < 80) enemy_s_delay = 80;
+        int enemy_s_delay = 250 - current_level->index * 40;
+        if (enemy_s_delay < 50) enemy_s_delay = 50;
 
         // INPUT
         switch (ch) {

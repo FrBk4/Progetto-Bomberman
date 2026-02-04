@@ -207,6 +207,7 @@ void Levels::run() {
 
     // invincibilità
     bool invincible = false;
+    bool invincible_effect = false;
     int blinkCounter = 0;
     const int blink_delay = 11;
     int blinkTick = 0;
@@ -377,7 +378,7 @@ void Levels::run() {
 
             // player sul nemico
             if (next == 'N' || next == 'S' || next == 'T' || next == '^' || next == 'U') {
-                if (!invincible) {
+                if (!invincible && !invincible_effect) {
                     p.loseLife();
                     invincible = true;
                     blinkCounter = 0;
@@ -398,7 +399,7 @@ void Levels::run() {
             current_level->level[p.getY()][p.getX()] <= 'z') {
 
             items.effect_list( current_level->level[p.getY()][p.getX()], current_level, screen, start,
-                &time_effect, &bombRadius, &invincible, &p, &EXPmult, &updradius );
+                &time_effect, &bombRadius, &invincible_effect, &p, &EXPmult, &updradius );
             current_level->level[p.getY()][p.getX()] = ' ';
 
             wattron(screen, COLOR_PAIR(2));
@@ -509,7 +510,7 @@ void Levels::run() {
                 if (pExplosionX[i] == p.getX() &&
                     pExplosionY[i] == p.getY()) {
 
-                    if (!invincible && !damagedThisExplosion) {
+                    if (!invincible && !invincible_effect && !damagedThisExplosion) {
                         p.loseLife();
                         invincible = true;
                         damagedThisExplosion = true;
@@ -586,7 +587,7 @@ void Levels::run() {
                 // COLLISIONE COL PLAYER
                 // =====================
                 if (nx == p.getX() && ny == p.getY()) {
-                    if (!invincible) {
+                    if (!invincible && !invincible_effect) {
                         p.loseLife();
                         invincible = true;
                         blinkCounter = 0;
@@ -660,7 +661,7 @@ void Levels::run() {
                 if (uExplosionX[i] == p.getX() &&
                     uExplosionY[i] == p.getY()) {
 
-                    if (!invincible) {
+                    if (!invincible && !invincible_effect) {
                         p.loseLife();
                         invincible = true;
                         blinkCounter = 0;
@@ -707,7 +708,7 @@ void Levels::run() {
         // =======================
         // PLAYER (BLINK)
         // =======================
-        if (invincible && (blinkCounter % 2 == 0))
+        if ((invincible || invincible_effect) && (blinkCounter % 2 == 0))
             playerChar = ' ';
         else
             playerChar = '@';
@@ -716,7 +717,7 @@ void Levels::run() {
         mvwprintw(screen, p.getY() + 1, p.getX() + 1, "%c", playerChar);
         wattroff(screen, COLOR_PAIR(2));
 
-        if (invincible) {
+        if (invincible || invincible_effect) {
             blinkTick++;
             if (blinkTick >= blink_delay) {
                 blinkCounter++;
@@ -752,7 +753,7 @@ void Levels::run() {
                 time_left = 0;
 
             if (time_effect && time(nullptr) >= time_effect) {
-                items.reseteffects(&bombRadius, &invincible, &EXPmult, &updradius);
+                items.reseteffects(&bombRadius, &invincible_effect, &EXPmult, &updradius);
                 time_effect = 0;
             }
 

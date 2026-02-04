@@ -877,6 +877,5 @@ void Levels::run() {
         }
 
         delwin(screen);
-    flushinp();
 
     }

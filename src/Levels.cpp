@@ -482,7 +482,7 @@ void Levels::run() {
                         break;
                     }
 
-                    if (c>='A'&&c<='Z') {
+                    if (c == '~' || c == '$' || c == '%' || c == '&' || c == '^'){
                         if (c == '~') {
                             //c = ' ';
                             p.addScore(100 * EXPmult);

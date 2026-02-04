@@ -123,7 +123,7 @@ void Leaderboard::drawDynamic() { // Disegna ciò che cambia ogni frame (pulsazi
 
     initWindow(startY + logoLines); // Inizializza la schermata della classifica
 
-    for (int y = 0; y < logoLines; y++) { // Pulisce l'area del titolo (non tutta la linea)
+    for (int y = 0; y < logoLines; y++) { // Pulisce l'area del titolo
         for (int x = 0; x < logoWidth; x++) {
             mvaddch(startY + y, startX + x, ' ');
         }

@@ -7,6 +7,7 @@
 #include "../include/Items.hpp"
 #include "../include/Score.hpp"
 #include <clocale>
+#include <cstring>
 
 #define DESTR_RATIO (10+(node->index*4))
 #define ITEMS_RATIO 95
@@ -177,11 +178,9 @@ void Levels::printscreen(map* level, WINDOW* screen) {
 
 void Levels::run() {
     clear();
+    box(stdscr, 0, 0);
     refresh();
     setlocale(LC_ALL, "");
-    initscr();
-    start_color();
-    use_default_colors();
     init_pair(3, COLOR_RED, COLOR_BLACK);
     init_pair(2, COLOR_CYAN, COLOR_BLACK);
 
@@ -307,11 +306,39 @@ void Levels::run() {
                 nodelay(controls, true);
                 box(controls, 0, 0);
 
-                mvwprintw(controls, 1, 1, "> Comandi del gioco <");
-                mvwprintw(controls, 3, 2, "WASD / Frecce: movimento");
-                mvwprintw(controls, 4, 2, "E: piazza bomba");
-                mvwprintw(controls, 5, 2, "ESC: esci");
-                mvwprintw(controls, 7, 2, "Premi P o ESC per tornare");
+                const char* logo[] = { // Scritta in ascii art
+                  " ;8p;;  [[;[[  [[   ]]  ,d888  88P'''",
+                  "';$[ ]; $$ '$. $$   $$ ;$s__   $$___ ",
+                  " '89'' o88oo88 88,  88  ''98b, 88''' ",
+                  " ,MY   UM' 'YP  PUMU9   YMMM9' YMMUYo"
+                };
+
+                int logoLines = 4;
+                int logoWidth = 0;
+                for (int i = 0; i < logoLines; i++) { // Calcolo larghezza della scritta (per centrarla)
+                    int len = (int)strlen(logo[i]);
+                    if (len > logoWidth) logoWidth = len;
+                }
+
+                int startX = (getmaxx(controls) - logoWidth) / 2; // Coordinate di dove si stampa il titolo
+                int startY = 2;
+
+                for (int i = 0; i < logoLines; i++) { // Stampa del titolo
+                    mvwprintw(controls, startY + i, startX, "%s", logo[i]);
+                }
+
+                int startY2 = startY + logoLines + 3; // Stampa dei comandi
+                mvwprintw(controls, startY2, 14, "COMANDI DI GIOCO");
+                mvwprintw(controls, startY2 + 2, 2, "[WASD] / [Frecce]: movimento");
+                mvwprintw(controls, startY2 + 3, 2, "[E]: piazza bomba");
+                mvwprintw(controls, startY2 + 4, 2, "[ESC]: esci");
+                mvwprintw(controls, startY2 + 6, 2, "Premere [P] o [ESC] per tornare al gioco");
+
+                /* HUD */
+                mvwprintw(controls, 24, 3,  "Punti: %d", p.getScore());
+                mvwprintw(controls, 24, 16, "Vite: %d",  p.getLives());
+                mvwprintw(controls, 24, 29, "Tempo: %d", (int)time_left);
+                mvwprintw(controls, 0, 2, "Livello: %d", lvl + 1);
 
                 char c;
                 do {

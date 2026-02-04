@@ -189,6 +189,8 @@ int Menu::run(const string items[], // Fa runnare tutto il menu e gestisce l'inp
     int selected = 0;
     int key = 0;
 
+    timeout(16);
+
     while (true) {
         draw(items, countItems, selected, key, subtitles, countSubt); // Stampa menu e titolo iniziale
 

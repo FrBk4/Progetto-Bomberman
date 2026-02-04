@@ -178,6 +178,7 @@ void Levels::printscreen(map* level, WINDOW* screen) {
 
 void Levels::run() {
     clear();
+    noecho();
     box(stdscr, 0, 0);
     refresh();
     setlocale(LC_ALL, "");

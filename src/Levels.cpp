@@ -92,7 +92,7 @@ map* Levels::genlevels() {  //questa funzione genera i 5 livelli e ritorna un ar
                             node->level[y][x] = 'N';
                         }
                         else if (r < 70) {       // nemico veloce
-                            node->level[y][x] = 'S';
+                            node->level[y][x] = ACS_BULLET;
                         } else if (r < 90) {
                             node->level[y][x] = 'T'; // nemico tank
                         } else if (r < 99 && !bplaced) {
@@ -265,11 +265,11 @@ void Levels::run() {
         enemySTick++;
 
         // difficoltà nemici
-        int enemy_n_delay = 1000 - current_level->index * 150;
-        if (enemy_n_delay < 200) enemy_n_delay = 200;
+        int enemy_n_delay = 500 - current_level->index * 150;
+        if (enemy_n_delay < 150) enemy_n_delay = 150;
 
-        int enemy_s_delay = 300 - current_level->index * 40;
-        if (enemy_s_delay < 80) enemy_s_delay = 80;
+        int enemy_s_delay = 250 - current_level->index * 40;
+        if (enemy_s_delay < 50) enemy_s_delay = 50;
 
         // INPUT
         switch (ch) {
@@ -549,7 +549,9 @@ void Levels::run() {
                 // =====================
                 if (enemy == 'U' && !uBombPlaced) {
                     int r = rand() % 100;
-                    if (r < 2) {
+                    int chance = 4 + current_level->index * 2;
+
+                    if (r < chance) {
 
                         // verifica che la cella di destinazione sia libera
                         if (current_level->level[ny][nx] == ' ') {

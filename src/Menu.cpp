@@ -108,7 +108,7 @@ void Menu::draw(const string items[], // Gestisce la stampa delle varie cose
                 int key,
                 const string subtitles[],
                 int countSubt) {
-    clear();
+    erase();
     if (startTime < 0.0) // Inizia a contare il tempo solo una volta
         startTime = nowSec();
 

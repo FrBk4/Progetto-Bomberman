@@ -9,7 +9,7 @@
 using namespace std;
 
 void Itemlist :: effect_list(char effect, map* level, WINDOW* screen, time_t start,
-                              time_t* time_effect, int* radius, bool *invincible, Player* p, int* mult, bool *updradius) {
+                              time_t* time_effect, int* radius, bool *invincible, Player* p, int* mult, bool *updradius, bool affected[2][5]) {
     switch (effect) {
 
         case 'b':  //incrementatore di raggio - 10s
@@ -32,6 +32,7 @@ void Itemlist :: effect_list(char effect, map* level, WINDOW* screen, time_t sta
                         p->addScore(20);
                         mvwprintw(screen, y+1, x+1, " ");
                         wrefresh(screen);
+                        affected[0][level->index] = true;
                     }
             break;
 
@@ -53,6 +54,7 @@ void Itemlist :: effect_list(char effect, map* level, WINDOW* screen, time_t sta
                         if (level->level[y][x] == '^')  p->addScore(50 * *mult);
                         level->level[y][x]=' ';
                         mvwprintw(screen, y+1, x+1, " ");
+                        affected[1][level->index] = true;
                         wrefresh(screen);
                     }
             break;
@@ -106,9 +108,48 @@ void Itemlist :: hideitems(map* level, WINDOW* screen) { //nasconde la natura de
               mvwprintw(screen, y+1, x+1, "?");
 }
 
-void Itemlist :: reseteffects(int *radius, bool* invincible, int* mult, bool* updradius) {
+void Itemlist :: reseteffects(WINDOW* screen, int *radius, bool* invincible, int* mult, bool* updradius) {
 
     if (!*updradius) *radius = 1;
     *invincible = false;
     *mult = 1;
+    box(screen, 0, 0);
+    wrefresh(screen);
+}
+
+void Itemlist :: printeffects(WINDOW* screen, char effect, bool w, bool k, bool r) {
+    switch (effect) {
+
+        case 'b':  //incrementatore di raggio - 10s
+            mvwprintw(screen, 0, 23, "<RADIUS>");
+            break;
+
+        case 'm':  //medikit - ripristina una vita
+            mvwprintw(screen, 0, 23, "<MEDIKIT>");
+            break;
+
+
+
+        case 'd': //defender: ti rende invincibile per 10 s
+            mvwprintw(screen, 0, 23, "<INVINC.>");
+            break;
+
+
+
+        case 'e': //EXP multiplier: per 10 secondi guadagni punti doppi
+            mvwprintw(screen, 0, 23, "<PUNTI x2>");
+            break;
+
+        case 'r': //permanent radius
+            mvwprintw(screen, 0, 40, "[R]");
+            break;
+
+    }
+
+    if (w)
+        mvwprintw(screen, 0, 40, "[W]");
+
+
+    if (k)
+        mvwprintw(screen, 0, 37, "[K]");
 }

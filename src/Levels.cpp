@@ -96,14 +96,14 @@ map* Levels::genlevels() {  //questa funzione genera i 5 livelli e ritorna un ar
                         int r = rand()%100;
 
                         if (r < 50) {              // nemico lento
-                            node->level[y][x] = '~';
+                            node->level[y][x] = 'N';
                         }
                         else if (r < 70) {       // nemico veloce
-                            node->level[y][x] = '$';
+                            node->level[y][x] = 'S';
                         } else if (r < 90) {
-                            node->level[y][x] = '%'; // nemico tank
+                            node->level[y][x] = 'T'; // nemico tank
                         } else if (r < 99 && !bplaced) {
-                            node->level[y][x] = '&'; // nemico bomberman
+                            node->level[y][x] = 'U'; // nemico bomberman
                             bplaced = true;
                         }
                     }
@@ -399,7 +399,7 @@ void Levels::run() {
             char next = current_level->level[ny][nx];
 
             // player sul nemico
-            if (next == '~' || next == '$' || next == '%' || next == '^' || next == '&') {
+            if (next == 'N' || next == 'S' || next == 'T' || next == '^' || next == 'U') {
                 if (!invincible && !invincible_effect) {
                     p.loseLife();
                     invincible = true;
@@ -498,20 +498,20 @@ void Levels::run() {
                         break;
                     }
 
-                    if (c == '~' || c == '$' || c == '%' || c == '&' || c == '^'){
-                        if (c == '~') {
+                    if (c == 'N' || c == 'S' || c == 'T' || c == 'U' || c == '^'){
+                        if (c == 'N') {
                             //c = ' ';
                             p.addScore(100 * EXPmult);
                         }
-                        else if (c == '$') {
+                        else if (c == 'S') {
                             //c = ' ';
                             p.addScore(150 * EXPmult);
                         }
-                        else if (c == '&') {
+                        else if (c == 'U') {
                             //c = ' ';
                             p.addScore(200 * EXPmult);
                         }
-                        else if (c == '%') {
+                        else if (c == 'T') {
                             c = '^';
                             p.addScore(100 * EXPmult);
                         }
@@ -563,15 +563,15 @@ void Levels::run() {
 
                 char enemy = current_level->level[y][x];
 
-                if (enemy != '~' && enemy != '$' && enemy != '%' &&
-                    enemy != '^' && enemy != '&')
+                if (enemy != 'N' && enemy != 'S' && enemy != 'T' &&
+                    enemy != '^' && enemy != 'U')
                     continue;
 
                 // velocità diverse
-                if ((enemy == '~' || enemy == '%') && !canMoveN)
+                if ((enemy == 'N' || enemy == 'T') && !canMoveN)
                     continue;
 
-                if ((enemy == '$' || enemy == '^' || enemy == '&') && !canMoveS)
+                if ((enemy == 'S' || enemy == '^' || enemy == 'U') && !canMoveS)
                     continue;
 
                 int dir = rand() % 4;
@@ -587,7 +587,7 @@ void Levels::run() {
                 // =====================
                 // NEMICO U: piazza bomba
                 // =====================
-                if (enemy == '&' && !uBombPlaced) {
+                if (enemy == 'U' && !uBombPlaced) {
                     int r = rand() % 100;
                     if (r < 2) {
 
@@ -604,7 +604,7 @@ void Levels::run() {
                             current_level->level[y][x] = '=';
 
                             // U si muove
-                            current_level->level[ny][nx] = '&';
+                            current_level->level[ny][nx] = 'U';
 
                             continue;
                         }

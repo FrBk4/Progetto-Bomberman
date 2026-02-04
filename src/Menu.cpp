@@ -221,14 +221,11 @@ int Menu::run(const string items[], // Fa runnare tutto il menu e gestisce l'inp
             if (selected == 0) { // Se l'utente ha selezionato Nuova Partita
                 startBombAnimation(); // Avvia animazione bombe sul titolo
 
-                nodelay(stdscr, TRUE); // Non aspetta l'input utente per andare avanti con l'animazione
-
                 while (animActive) {
                     draw(items, countItems, selected, key, subtitles, countSubt);
                     napms(16); // ~60 FPS
                 }
             }
-            nodelay(stdscr, FALSE); // Col cambio di schermata torna ad aspettare l'input utente
             return selected; // Infine ritorna a Game::run() cosa è stato selezionato
         }
     }

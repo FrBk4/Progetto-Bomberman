@@ -171,6 +171,22 @@ void Levels::printscreen(map* level, WINDOW* screen) {
                     mvwaddch(screen, y+1, x+1, ACS_CKBOARD);
                     break;
 
+            case 'N':
+                    mvwaddch(screen, y+1, x+1, '~');
+                    break;
+
+            case 'S':
+                    mvwaddch(screen, y+1, x+1, '$');
+                    break;
+
+            case 'T':
+                    mvwaddch(screen, y+1, x+1, '%');
+                    break;
+
+            case 'U':
+                    mvwaddch(screen, y+1, x+1, '&');
+                    break;
+
                 default:
                     mvwprintw(screen, y+1, x+1, "%c", level->level[y][x]);
                     break;

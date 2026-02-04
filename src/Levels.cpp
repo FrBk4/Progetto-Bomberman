@@ -196,8 +196,14 @@ void Levels::run() {
     double time_left = 100.0;    // secondi di gioco
     time_t time_effect = 0;
 
-    int EXPmult = 1;
+    int EXPmult = 1; //valori gestione effetti
     bool updradius = false;
+    char effect = 'a';
+    bool affected[2][5]; //sintassi: wallbroken, killed, liv da 0 a 4
+
+    for (int e = 0; e<2; e++)
+        for (int l=0; l<5; l++)
+            affected[e][l] = false;
 
     // tick
     int playerTick = 0;
@@ -400,6 +406,7 @@ void Levels::run() {
 
             items.effect_list( current_level->level[p.getY()][p.getX()], current_level, screen, time(nullptr),
                 &time_effect, &bombRadius, &invincible_effect, &p, &EXPmult, &updradius );
+
             current_level->level[p.getY()][p.getX()] = ' ';
 
             wattron(screen, COLOR_PAIR(2));
@@ -760,8 +767,9 @@ void Levels::run() {
                 time_left = 0.0;
 
             if (time_effect && time(nullptr) >= time_effect) {
-                items.reseteffects(&bombRadius, &invincible_effect, &EXPmult, &updradius);
+                items.reseteffects(screen, &bombRadius, &invincible_effect, &EXPmult, &updradius);
                 time_effect = 0;
+                effect = 'a';
             }
             if (p.getLives() <= 0 || time_left <= 0.0)
                 ingame = false;
@@ -778,6 +786,7 @@ void Levels::run() {
             mvwprintw(screen, 24, 16, "Vite: %d",  p.getLives());
             mvwprintw(screen, 24, 29, "Tempo: %d", (int)time_left);
             mvwprintw(screen, 0, 2, "Livello: %d", lvl + 1);
+            items.printeffects(screen, effect, affected[0][current_level->index], affected[1][current_level->index], updradius );
 
             // =======================
             // ESPLOSIONE BOMBA PLAYER

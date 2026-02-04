@@ -405,7 +405,7 @@ void Levels::run() {
             current_level->level[p.getY()][p.getX()] <= 'z') {
 
             items.effect_list( current_level->level[p.getY()][p.getX()], current_level, screen, time(nullptr),
-                &time_effect, &bombRadius, &invincible_effect, &p, &EXPmult, &updradius );
+                &time_effect, &bombRadius, &invincible_effect, &p, &EXPmult, &updradius, affected);
 
             current_level->level[p.getY()][p.getX()] = ' ';
 

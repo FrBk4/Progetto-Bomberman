@@ -34,7 +34,7 @@ map* Levels::genlevels() {  //questa funzione genera i 5 livelli e ritorna un ar
     map* head = nullptr;
     map* prev = nullptr;
 
-    for (int liv = 0; liv < 6; liv++) {  //creazione mura indistruttibili e inizializzazione lista
+    for (int liv = 0; liv < 5; liv++) {  //creazione mura indistruttibili e inizializzazione lista
         map* node = new map;
 
         node->index = liv;
@@ -74,7 +74,7 @@ map* Levels::genlevels() {  //questa funzione genera i 5 livelli e ritorna un ar
 
     for (map* node = head; node; node = node->next) {
         if (node->index !=0) node->level[1][0] = '<';
-        if (node->index !=6) node->level[21][42] = '>';
+        if (node->index !=4) node->level[21][42] = '>';
     }
 
     //spawn nemici
@@ -738,7 +738,7 @@ void Levels::run() {
 
             // controlla se TUTTI i livelli sono stati completati
             bool allCleared = true;
-            for (int i = 0; i < 6; i++) {
+            for (int i = 0; i < 5; i++) {
                 if (!levelCleared[i]) {
                     allCleared = false;
                     break;

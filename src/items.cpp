@@ -85,7 +85,7 @@ char Itemlist :: spawnrate(int prob) { //funzione che genera item casualmente su
     if (q<prob){
        int p = rand() % 100;
 
-        if(p<35) //radius: prob 35%
+       if(p<35) //radius: prob 35%
             return 'b';
         if (p<55) //medikit: prob 20%
             return 'm';

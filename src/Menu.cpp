@@ -20,15 +20,6 @@ void Menu::initLogo() { // Inizializza il titolo
         "  88o,,od8P 888,_ _,88 888 Y88' 888o 88o,,od8P 888oo,_  888b '88b  888 Y88' 888o o88  '888o o88'  'Y88;",
         " ''YUMMMP'   'YMMMMMP' MMM  M'  'MMM 'YUMMMP'  'YYYUMM YMMM   'WYP MMM  M'  'MMM MM'   YMMY MM'     YMb"};
 
-    /*const char* logo[] = { // Titolo base (se si vuole cambiare titolo ricordarsi di mettere LOGO_LINES = 7 in menu.h)
-        "#########   ########    ###   ###   #########  ########## #########    ###   ###       ###     ###     ###",
-        "###    ### ###    ###  ##### #####  ###    ### ###        ###    ###  ##### #####    ### ###   ####    ###",
-        "###    ### ###    ### ### ##### ### ###    ### ###        ###    ### ### ##### ###  ###   ###  #####   ###",
-        "#########  ###    ### ###  ###  ### #########  #########  ########   ###  ###  ### ########### ### ### ###",
-        "###    ### ###    ### ###       ### ###    ### ###        ###    ### ###       ### ###     ### ###   #####",
-        "###    ### ###    ### ###       ### ###    ### ###        ###    ### ###       ### ###     ### ###    ####",
-        "#########   ########  ###       ### #########  ########## ###    ### ###       ### ###     ### ###     ###"};*/
-
     logoWidth = 0;
     for (int i = 0; i < LogoLines; i++) { // Calcolo larghezza del titolo (per centrarlo)
         int len = (int)strlen(logo[i]);

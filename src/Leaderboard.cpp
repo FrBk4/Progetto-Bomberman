@@ -11,7 +11,7 @@ double Leaderboard::nowSec() {
     return duration<double>(steady_clock::now() - t0).count();
 }
 
-void Leaderboard::loadFromFile(const char* filename) {
+void Leaderboard::loadFromFile(const char* filename) { // Legge e salva gli elementi del file Leaderboard
     entryCount = 0;
 
     FILE* f = fopen(filename, "r");
@@ -32,7 +32,7 @@ void Leaderboard::loadFromFile(const char* filename) {
     fclose(f);
 }
 
-void Leaderboard::sortEntries() {
+void Leaderboard::sortEntries() { // Ordina in ordine decrescente gli elementi del file Leaderboard
     for (int i = 0; i < entryCount - 1; i++) {
         int best = i;
         for (int j = i + 1; j < entryCount; j++) {
@@ -153,7 +153,7 @@ void Leaderboard::drawDynamic() { // Disegna ciò che cambia ogni frame (pulsazi
             mvwprintw(boardWin, row + r, 1, "%*s", boardW - 2, ""); // riempie di spazi la riga interna
         }
 
-        int maxScroll = entryCount - maxRows;
+        int maxScroll = entryCount - maxRows; // Parametri utili per la stampa degli elementi della classifica
         if (maxScroll < 0) maxScroll = 0;
         if (scroll < 0) scroll = 0;
         if (scroll > maxScroll) scroll = maxScroll;
@@ -206,7 +206,7 @@ void Leaderboard::run() {
         int maxScroll = entryCount - maxRows;
         if (maxScroll < 0) maxScroll = 0;
 
-        if (ch == KEY_DOWN || ch == 's') scroll++;
+        if (ch == KEY_DOWN || ch == 's') scroll++; // Gestione input per scorrimento della classifica
         else if (ch == KEY_UP || ch == 'w') scroll--;
 
         if (scroll < 0) scroll = 0;

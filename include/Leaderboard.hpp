@@ -7,6 +7,7 @@ class Leaderboard {
 protected:
     static const int logoLines = 4;
     int logoWidth = 0;
+    int scroll = 0;
 
     WINDOW* boardWin = nullptr;
     bool initBoard = false;

@@ -149,12 +149,26 @@ void Leaderboard::drawDynamic() { // Disegna ciò che cambia ogni frame (pulsazi
         int maxRows = boardH - 7; // spazio disponibile
         if (maxRows < 0) maxRows = 0;
 
-        for (int i = 0; i < 10 && i < maxRows; i++) { // Stampa dei giocatori della classifica
-            mvwprintw(boardWin, row + i, 2, "%d) %s", i + 1, entries[i].name);
-            mvwprintw(boardWin, row + i, boardW - 10, "%d", entries[i].score);
+        for (int r = 0; r < maxRows; r++) { // Pulisce solo l'area dove ci sono le entry (non tutta la window)
+            mvwprintw(boardWin, row + r, 1, "%*s", boardW - 2, ""); // riempie di spazi la riga interna
         }
 
-        mvwprintw(boardWin, boardH - 2, 2, "[ESC] Torna indietro"); // Comando per uscire (si può uscire anche con INVIO)
+        int maxScroll = entryCount - maxRows;
+        if (maxScroll < 0) maxScroll = 0;
+        if (scroll < 0) scroll = 0;
+        if (scroll > maxScroll) scroll = maxScroll;
+
+        int visible = maxRows - 1;
+        if (visible > entryCount - scroll) visible = entryCount - scroll;
+        if (visible < 0) visible = 0;
+
+        for (int i = 0; i < visible; i++) { // Stampa dei giocatori della classifica
+            int idx = scroll + i;
+            mvwprintw(boardWin, row + i, 2, "%d) %s", idx + 1, entries[idx].name);
+            mvwprintw(boardWin, row + i, boardW - 10, "%d", entries[idx].score);
+        }
+
+        mvwprintw(boardWin, boardH - 2, 2, "[SU]/[GIU] o [W]/[S] Scorri, [ESC] Indietro"); // Comando per uscire (si può uscire anche con INVIO)
     }
 }
 
@@ -185,6 +199,18 @@ void Leaderboard::run() {
             destroyWindow(); // Quando si esce distrugge la finestra creata per la classifica
             break;
         }
+
+        int maxRows = (boardH - 7); // Calcola quante righe stanno nella finestra in questo momento
+        if (maxRows < 1) maxRows = 1;
+
+        int maxScroll = entryCount - maxRows;
+        if (maxScroll < 0) maxScroll = 0;
+
+        if (ch == KEY_DOWN || ch == 's') scroll++;
+        else if (ch == KEY_UP || ch == 'w') scroll--;
+
+        if (scroll < 0) scroll = 0;
+        if (scroll > maxScroll) scroll = maxScroll;
 
         draw(); // Disegno della schermata leaderboard
         napms(16); // Limita la velocità del loop (per evitare flickering)

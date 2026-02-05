@@ -160,7 +160,7 @@ void Menu::draw(const string items[], // Gestisce la stampa delle varie cose
     }
 
     if (key == int('p')) // Stampa dei comandi
-        mvprintw(1, 2, "SU/GIU o W/S per muovere, INVIO per scegliere, ESC per uscire");
+        mvprintw(1, 2, "[SU/GIU] o [W/S] per muovere, [INVIO] per scegliere, [ESC] per uscire");
     if (key == int('q')) { // Nasconde i comandi (premendo di nuovo "p")
         move (2, 0);
         clrtoeol();

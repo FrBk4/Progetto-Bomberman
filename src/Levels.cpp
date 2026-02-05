@@ -11,7 +11,7 @@
 #include <chrono>
 
 #define DESTR_RATIO (10+(node->index*4))
-#define ITEMS_RATIO 95
+#define ITEMS_RATIO 100
 #define ENEMY_RATIO (1+(node->index*2))
 
 using namespace std;
@@ -34,7 +34,7 @@ map* Levels::genlevels() {  //questa funzione genera i 5 livelli e ritorna un ar
     map* head = nullptr;
     map* prev = nullptr;
 
-    for (int liv = 0; liv < 5; liv++) {  //creazione mura indistruttibili e inizializzazione lista
+    for (int liv = 0; liv < 6; liv++) {  //creazione mura indistruttibili e inizializzazione lista
         map* node = new map;
 
         node->index = liv;
@@ -74,7 +74,7 @@ map* Levels::genlevels() {  //questa funzione genera i 5 livelli e ritorna un ar
 
     for (map* node = head; node; node = node->next) {
         if (node->index !=0) node->level[1][0] = '<';
-        if (node->index !=4) node->level[21][42] = '>';
+        if (node->index !=6) node->level[21][42] = '>';
     }
 
     //spawn nemici
@@ -90,17 +90,19 @@ map* Levels::genlevels() {  //questa funzione genera i 5 livelli e ritorna un ar
                     continue;
 
                 if (node->level[y][x] == ' ') {
-                    int eprob = rand() % 100;
+                    int eprob;
+                    if (node->index == 0) eprob = rand() % 110;
+                    else eprob = rand() % 175;
 
-                    if (eprob < ENEMY_RATIO ){
+                    if (eprob < ENEMY_RATIO){
                         int r = rand()%100;
 
-                        if (r < 50) {              // nemico lento
+                        if (r < 40) {              // nemico lento
                             node->level[y][x] = 'N';
                         }
-                        else if (r < 70) {       // nemico veloce
+                        else if (r < 65) {       // nemico veloce
                             node->level[y][x] = 'S';
-                        } else if (r < 90) {
+                        } else if (r < 85) {
                             node->level[y][x] = 'T'; // nemico tank
                         } else if (r < 99 && !bplaced) {
                             node->level[y][x] = 'U'; // nemico bomberman
@@ -158,6 +160,8 @@ map* Levels::change_level(map *head, WINDOW* screen, bool action, int lvl, int t
 }
 
 void Levels::printscreen(map* level, WINDOW* screen) {
+    init_pair(4, COLOR_YELLOW, COLOR_BLACK);
+    init_pair(5, COLOR_GREEN, COLOR_BLACK);
 
     for (int y=0; y<23; y++)
         for (int x=0; x<43; x++)
@@ -172,26 +176,36 @@ void Levels::printscreen(map* level, WINDOW* screen) {
                     break;
 
             case 'N':
+                    wattron(screen, COLOR_PAIR(4));
                     mvwaddch(screen, y+1, x+1, '~');
+                    wattroff(screen, COLOR_PAIR(4));
                     break;
 
             case 'S':
+                    wattron(screen, COLOR_PAIR(4));
                     mvwaddch(screen, y+1, x+1, '$');
+                    wattroff(screen, COLOR_PAIR(4));
                     break;
 
             case 'T':
+                    wattron(screen, COLOR_PAIR(4));
                     mvwaddch(screen, y+1, x+1, '%');
+                    wattroff(screen, COLOR_PAIR(4));
                     break;
 
             case 'U':
+                    wattron(screen, COLOR_PAIR(4));
                     mvwaddch(screen, y+1, x+1, '&');
+                    wattroff(screen, COLOR_PAIR(4));
                     break;
 
                 default:
                     mvwprintw(screen, y+1, x+1, "%c", level->level[y][x]);
                     break;
             }
+    wattron(screen, COLOR_PAIR(5));
     items.hideitems(level, screen);
+    wattroff(screen, COLOR_PAIR(5));
     wborder(screen, ACS_VLINE, ACS_VLINE, ACS_HLINE, ACS_HLINE, ACS_ULCORNER, ACS_URCORNER, ACS_LLCORNER, ACS_LRCORNER);
 }
 
@@ -205,11 +219,12 @@ void Levels::run() {
     box(stdscr, 0, 0);
     refresh();
     setlocale(LC_ALL, "");
-    init_pair(3, COLOR_RED, COLOR_BLACK);
+    init_pair(3, COLOR_RED, COLOR_RED);
     init_pair(2, COLOR_CYAN, COLOR_BLACK);
+    init_pair(7, COLOR_BLUE, COLOR_BLACK);
 
-    time_t start = time(nullptr);
-    time_t time_left = 100;
+    double lastTime = nowSec();   // tempo precedente
+    double time_left = 100.0;    // secondi di gioco
     time_t time_effect = 0;
 
     int EXPmult = 1; //valori gestione effetti
@@ -223,9 +238,12 @@ void Levels::run() {
 
     // tick
     int playerTick = 0;
-    int enemyNTick = 0;
-    int enemySTick = 0;
     const int player_tick_delay = 1;
+
+    // timer
+    double lastEnemyN = nowSec();
+    double lastEnemyS = nowSec();
+
 
     // invincibilità
     bool invincible = false;
@@ -291,16 +309,14 @@ void Levels::run() {
         int dx = 0, dy = 0;
 
         playerTick++;
-        enemyNTick++;
-        enemySTick++;
 
         // difficoltà nemici
-        int enemy_n_delay = 500 - current_level->index * 150;
-        if (enemy_n_delay < 150) enemy_n_delay = 150;
+        double enemy_n_delay = 1.5 - current_level->index * 0.1;
+        if (enemy_n_delay < 0.15) enemy_n_delay = 0.15;
 
-        int enemy_s_delay = 250 - current_level->index * 40;
-        if (enemy_s_delay < 50) enemy_s_delay = 50;
-
+        double enemy_s_delay = 1.10 - current_level->index * 0.05;
+        if (enemy_s_delay < 0.05) enemy_s_delay = 0.05;
+            
         // INPUT
         switch (ch) {
             case 27: // ESC
@@ -326,7 +342,6 @@ void Levels::run() {
                     current_level->level[pBombY][pBombX] = 'O';
                     }
                 break;
-
 
             case 'p': case 'P': {
                 time_t menu_span = time(nullptr);
@@ -420,9 +435,10 @@ void Levels::run() {
         if (current_level->level[p.getY()][p.getX()] >= 'a' &&
             current_level->level[p.getY()][p.getX()] <= 'z') {
 
-            items.effect_list( current_level->level[p.getY()][p.getX()], current_level, screen, start,
-                &time_effect, &bombRadius, &invincible_effect, &p, &EXPmult, &updradius, affected );
+            items.effect_list( current_level->level[p.getY()][p.getX()], current_level, screen, time(nullptr),
+                &time_effect, &bombRadius, &invincible_effect, &p, &EXPmult, &updradius, affected);
             effect = current_level->level[p.getY()][p.getX()];
+
             current_level->level[p.getY()][p.getX()] = ' ';
 
             wattron(screen, COLOR_PAIR(2));
@@ -494,6 +510,7 @@ void Levels::run() {
                     }
 
                     if (c == '+') {
+                        p.addScore(100);
                         c = ' ';
                         break;
                     }
@@ -552,6 +569,12 @@ void Levels::run() {
         // =====================
         // MOVIMENTO NEMICI
         // =====================
+
+        double now = nowSec();
+
+        bool canMoveN = (now - lastEnemyN >= enemy_n_delay);
+        bool canMoveS = (now - lastEnemyS >= enemy_s_delay);
+
         for (int y = 1; y < 22; y++) {
             for (int x = 1; x < 42; x++) {
 
@@ -562,11 +585,11 @@ void Levels::run() {
                     continue;
 
                 // velocità diverse
-                if (enemy == 'N' && enemyNTick < enemy_n_delay) continue;
-                if (enemy == 'S' && enemySTick < enemy_s_delay) continue;
-                if (enemy == 'T' && enemyNTick < enemy_n_delay) continue;
-                if (enemy == '^' && enemySTick < enemy_s_delay) continue;
-                if (enemy == 'U' && enemySTick < enemy_s_delay) continue;
+                if ((enemy == 'N' || enemy == 'T') && !canMoveN)
+                    continue;
+
+                if ((enemy == 'S' || enemy == '^' || enemy == 'U') && !canMoveS)
+                    continue;
 
                 int dir = rand() % 4;
                 int nx = x, ny = y;
@@ -582,7 +605,7 @@ void Levels::run() {
                 // NEMICO U: piazza bomba
                 // =====================
                 if (enemy == 'U' && !uBombPlaced) {
-                    int r = rand() % 100;
+                    int r = rand() % 50;
                     if (r < 2) {
 
                         // verifica che la cella di destinazione sia libera
@@ -595,7 +618,9 @@ void Levels::run() {
                             uBombDelay = 2 + rand() % 3;
 
                             // lascia la bomba nella cella vecchia
+                            wattron(screen, COLOR_PAIR(7));
                             current_level->level[y][x] = '=';
+                            wattroff(screen, COLOR_PAIR(7));
 
                             // U si muove
                             current_level->level[ny][nx] = 'U';
@@ -629,9 +654,9 @@ void Levels::run() {
             }
         }
 
-        // reset tick
-        if (enemyNTick >= enemy_n_delay) enemyNTick = 0;
-        if (enemySTick >= enemy_s_delay) enemySTick = 0;
+        if (canMoveN) lastEnemyN = now;
+        if (canMoveS) lastEnemyS = now;
+
 
         // =======================
         // ESPLOSIONE BOMBA U
@@ -704,7 +729,7 @@ void Levels::run() {
         int idx = current_level->index;
 
         // se il livello non è ancora stato clearato
-        if (!levelCleared[idx] && countEnemies(current_level) == 0) {
+        if ((!levelCleared[idx]) && countEnemies(current_level) == 0) {
 
             levelCleared[idx] = true;   // segna questo livello come completato
 
@@ -713,7 +738,7 @@ void Levels::run() {
 
             // controlla se TUTTI i livelli sono stati completati
             bool allCleared = true;
-            for (int i = 0; i < 5; i++) {
+            for (int i = 0; i < 6; i++) {
                 if (!levelCleared[i]) {
                     allCleared = false;
                     break;
@@ -764,24 +789,24 @@ void Levels::run() {
             }
         }
 
-
             // =======================
             // TEMPO
             // =======================
-            time_t now = time(nullptr);
-            time_left -= (now - start);
-            start = now;
+            double currentTime = nowSec();
+            double delta = currentTime - lastTime;
+            lastTime = currentTime;
 
-            if (time_left < 0)
-                time_left = 0;
+            time_left -= delta;
+            if (time_left < 0.0)
+                time_left = 0.0;
 
             if (time_effect && time(nullptr) >= time_effect) {
                 items.reseteffects(screen, &bombRadius, &invincible_effect, &EXPmult, &updradius);
                 time_effect = 0;
                 effect = 'a';
             }
-
-            if (p.getLives() <= 0 || time_left <= 0) ingame = false;
+            if (p.getLives() <= 0 || time_left <= 0.0)
+                ingame = false;
 
             // =======================
             // RENDER
@@ -839,17 +864,15 @@ void Levels::run() {
                 }
             }
 
-            /* PLAYER SEMPRE DOPO */
+            /* player dopo */
             wattron(screen, COLOR_PAIR(2));
             mvwprintw(screen, p.getY() + 1, p.getX() + 1, "%c", playerChar);
             wattroff(screen, COLOR_PAIR(2));
 
-            wrefresh(screen);
-
-
             if (levelCleared[current_level->index]) {
-                mvwprintw(screen, 0, 14, "[CLEAR]");
+                mvwprintw(screen, 0, 14, "CLEAR");
             }
+            wrefresh(screen);
 
         } // fine gameloop
 
@@ -881,11 +904,27 @@ void Levels::run() {
             getmaxy(stdscr)/2 - 2,
             getmaxx(stdscr)/2 - 20);
 
-        box(prompt, 0, 0);
-        mvwprintw(prompt, 1, 2, "Inserisci il tuo nome:");
-        wrefresh(prompt);
+        while (true) {
+            werase(prompt);
+            box(prompt, 0, 0);
+            mvwprintw(prompt, 1, 2, "Inserisci il tuo nome: ");
+            wrefresh(prompt);
+            wgetnstr(prompt, name, 31);
+            bool hasSpace = false;
+            for (int i = 0; name[i]; i++) {
+                if (!isalnum(name[i])) {
+                    hasSpace = true;    break;
+                }
+            }
+            if (!hasSpace && strlen(name) > 0)    break;
+            werase(prompt);
+            box(prompt, 0, 0);
+            mvwprintw(prompt, 1, 2, "Niente spazi nel nome!"); // Messaggio d'errore
+            mvwprintw(prompt, 3, 2, "Premi [INVIO]...");
+            wrefresh(prompt);
+            wgetch(prompt);
+        }
 
-        wgetnstr(prompt, name, 31);
         Score::saveScore("Leaderboard.txt", name, p.getScore());
 
         delwin(prompt);
@@ -904,4 +943,4 @@ void Levels::run() {
 
         delwin(screen);
 
-    }
+}

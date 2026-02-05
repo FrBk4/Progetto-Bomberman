@@ -5,6 +5,7 @@
 #include "player.hpp"
 
 class Itemlist {
+    bool tempRadius = false;
 public:
     char spawnrate(int prob);
     void effect_list(char effect, map* level, WINDOW* screen, time_t start,

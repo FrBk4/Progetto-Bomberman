@@ -19,9 +19,9 @@ add_executable(ascii_bomberman
         include/Levels.hpp
         src/Levels.cpp
         include/Player.hpp
-	include/Enemy.hpp
+	    include/Enemy.hpp
         src/Player.cpp
-	src/Enemy.cpp
+	    src/Enemy.cpp
         include/items.hpp
         src/items.cpp
 )

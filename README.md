@@ -11,7 +11,7 @@ Items (items.hpp e items.cpp)
 
 
 Manuel Sgarbi:
-Azioni e movimenti nemici (Enemy.cpp + principalmente in Levels.cpp)
+Azioni e movimenti nemici (Enemy.cpp + Levels.cpp)
 Azioni e movimenti player (Player.cpp)
 Generazione player e nemici con aree sicure (Levels.cpp)
 Gestione bembe player/nemici (Levels.cpp)

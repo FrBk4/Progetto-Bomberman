@@ -7,8 +7,8 @@ int countEnemies(map* level) {
         for (int x = 1; x < 42; x++) {
             char c = level->level[y][x];
 
-            if (c == '~' || c == '$' || c == '%' ||
-                c == '^' || c == '&') {
+            if (c == 'N' || c == 'U' || c == 'S' ||
+                c == 'T') {
                 count++;
             }
         }

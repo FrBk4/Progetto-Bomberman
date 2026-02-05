@@ -11,7 +11,7 @@
 #include <chrono>
 
 #define DESTR_RATIO (10+(node->index*4))
-#define ITEMS_RATIO 95
+#define ITEMS_RATIO 100
 #define ENEMY_RATIO (1+(node->index*2))
 
 using namespace std;
@@ -34,7 +34,7 @@ map* Levels::genlevels() {  //questa funzione genera i 5 livelli e ritorna un ar
     map* head = nullptr;
     map* prev = nullptr;
 
-    for (int liv = 0; liv < 5; liv++) {  //creazione mura indistruttibili e inizializzazione lista
+    for (int liv = 0; liv < 6; liv++) {  //creazione mura indistruttibili e inizializzazione lista
         map* node = new map;
 
         node->index = liv;
@@ -74,7 +74,7 @@ map* Levels::genlevels() {  //questa funzione genera i 5 livelli e ritorna un ar
 
     for (map* node = head; node; node = node->next) {
         if (node->index !=0) node->level[1][0] = '<';
-        if (node->index !=4) node->level[21][42] = '>';
+        if (node->index !=6) node->level[21][42] = '>';
     }
 
     //spawn nemici
@@ -90,17 +90,19 @@ map* Levels::genlevels() {  //questa funzione genera i 5 livelli e ritorna un ar
                     continue;
 
                 if (node->level[y][x] == ' ') {
-                    int eprob = rand() % 100;
+                    int eprob;
+                    if (node->index == 0) eprob = rand() % 110;
+                    else eprob = rand() % 175;
 
-                    if (eprob < ENEMY_RATIO ){
+                    if (eprob < ENEMY_RATIO){
                         int r = rand()%100;
 
-                        if (r < 50) {              // nemico lento
+                        if (r < 40) {              // nemico lento
                             node->level[y][x] = 'N';
                         }
-                        else if (r < 70) {       // nemico veloce
+                        else if (r < 65) {       // nemico veloce
                             node->level[y][x] = 'S';
-                        } else if (r < 90) {
+                        } else if (r < 85) {
                             node->level[y][x] = 'T'; // nemico tank
                         } else if (r < 99 && !bplaced) {
                             node->level[y][x] = 'U'; // nemico bomberman
@@ -158,6 +160,8 @@ map* Levels::change_level(map *head, WINDOW* screen, bool action, int lvl, int t
 }
 
 void Levels::printscreen(map* level, WINDOW* screen) {
+    init_pair(4, COLOR_YELLOW, COLOR_BLACK);
+    init_pair(5, COLOR_GREEN, COLOR_BLACK);
 
     for (int y=0; y<23; y++)
         for (int x=0; x<43; x++)
@@ -172,26 +176,36 @@ void Levels::printscreen(map* level, WINDOW* screen) {
                     break;
 
             case 'N':
+                    wattron(screen, COLOR_PAIR(4));
                     mvwaddch(screen, y+1, x+1, '~');
+                    wattroff(screen, COLOR_PAIR(4));
                     break;
 
             case 'S':
+                    wattron(screen, COLOR_PAIR(4));
                     mvwaddch(screen, y+1, x+1, '$');
+                    wattroff(screen, COLOR_PAIR(4));
                     break;
 
             case 'T':
+                    wattron(screen, COLOR_PAIR(4));
                     mvwaddch(screen, y+1, x+1, '%');
+                    wattroff(screen, COLOR_PAIR(4));
                     break;
 
             case 'U':
+                    wattron(screen, COLOR_PAIR(4));
                     mvwaddch(screen, y+1, x+1, '&');
+                    wattroff(screen, COLOR_PAIR(4));
                     break;
 
                 default:
                     mvwprintw(screen, y+1, x+1, "%c", level->level[y][x]);
                     break;
             }
+    wattron(screen, COLOR_PAIR(5));
     items.hideitems(level, screen);
+    wattroff(screen, COLOR_PAIR(5));
     wborder(screen, ACS_VLINE, ACS_VLINE, ACS_HLINE, ACS_HLINE, ACS_ULCORNER, ACS_URCORNER, ACS_LLCORNER, ACS_LRCORNER);
 }
 
@@ -205,8 +219,9 @@ void Levels::run() {
     box(stdscr, 0, 0);
     refresh();
     setlocale(LC_ALL, "");
-    init_pair(3, COLOR_RED, COLOR_BLACK);
+    init_pair(3, COLOR_RED, COLOR_RED);
     init_pair(2, COLOR_CYAN, COLOR_BLACK);
+    init_pair(7, COLOR_BLUE, COLOR_BLACK);
 
     double lastTime = nowSec();   // tempo precedente
     double time_left = 100.0;    // secondi di gioco
@@ -296,10 +311,10 @@ void Levels::run() {
         playerTick++;
 
         // difficoltà nemici
-        double enemy_n_delay = 0.5 - current_level->index * 0.1;
+        double enemy_n_delay = 1.5 - current_level->index * 0.1;
         if (enemy_n_delay < 0.15) enemy_n_delay = 0.15;
 
-        double enemy_s_delay = 0.25 - current_level->index * 0.05;
+        double enemy_s_delay = 1.10 - current_level->index * 0.05;
         if (enemy_s_delay < 0.05) enemy_s_delay = 0.05;
             
         // INPUT
@@ -422,6 +437,7 @@ void Levels::run() {
 
             items.effect_list( current_level->level[p.getY()][p.getX()], current_level, screen, time(nullptr),
                 &time_effect, &bombRadius, &invincible_effect, &p, &EXPmult, &updradius, affected);
+            effect = current_level->level[p.getY()][p.getX()];
 
             current_level->level[p.getY()][p.getX()] = ' ';
 
@@ -494,11 +510,12 @@ void Levels::run() {
                     }
 
                     if (c == '+') {
+                        p.addScore(100);
                         c = ' ';
                         break;
                     }
 
-                    if (c == 'N' || c == 'S' || c == 'T' || c == 'U' || c == '^'){
+                    if (c>='A'&&c<='Z') {
                         if (c == 'N') {
                             //c = ' ';
                             p.addScore(100 * EXPmult);
@@ -588,7 +605,7 @@ void Levels::run() {
                 // NEMICO U: piazza bomba
                 // =====================
                 if (enemy == 'U' && !uBombPlaced) {
-                    int r = rand() % 100;
+                    int r = rand() % 50;
                     if (r < 2) {
 
                         // verifica che la cella di destinazione sia libera
@@ -601,7 +618,9 @@ void Levels::run() {
                             uBombDelay = 2 + rand() % 3;
 
                             // lascia la bomba nella cella vecchia
+                            wattron(screen, COLOR_PAIR(7));
                             current_level->level[y][x] = '=';
+                            wattroff(screen, COLOR_PAIR(7));
 
                             // U si muove
                             current_level->level[ny][nx] = 'U';
@@ -710,7 +729,7 @@ void Levels::run() {
         int idx = current_level->index;
 
         // se il livello non è ancora stato clearato
-        if (!levelCleared[idx] && countEnemies(current_level) == 0) {
+        if ((!levelCleared[idx]) && countEnemies(current_level) == 0) {
 
             levelCleared[idx] = true;   // segna questo livello come completato
 
@@ -719,7 +738,7 @@ void Levels::run() {
 
             // controlla se TUTTI i livelli sono stati completati
             bool allCleared = true;
-            for (int i = 0; i < 5; i++) {
+            for (int i = 0; i < 6; i++) {
                 if (!levelCleared[i]) {
                     allCleared = false;
                     break;
@@ -851,12 +870,10 @@ void Levels::run() {
             mvwprintw(screen, p.getY() + 1, p.getX() + 1, "%c", playerChar);
             wattroff(screen, COLOR_PAIR(2));
 
-            wrefresh(screen);
-
-
             if (levelCleared[current_level->index]) {
-                mvwprintw(screen, 0, 14, "[CLEAR]");
+                mvwprintw(screen, 0, 14, "CLEAR");
             }
+            wrefresh(screen);
 
         } // fine gameloop
 
@@ -888,11 +905,27 @@ void Levels::run() {
             getmaxy(stdscr)/2 - 2,
             getmaxx(stdscr)/2 - 20);
 
-        box(prompt, 0, 0);
-        mvwprintw(prompt, 1, 2, "Inserisci il tuo nome:");
-        wrefresh(prompt);
+        while (true) {
+            werase(prompt);
+            box(prompt, 0, 0);
+            mvwprintw(prompt, 1, 2, "Inserisci il tuo nome: ");
+            wrefresh(prompt);
+            wgetnstr(prompt, name, 31);
+            bool hasSpace = false;
+            for (int i = 0; name[i]; i++) {
+                if (!isalnum(name[i])) {
+                    hasSpace = true;    break;
+                }
+            }
+            if (!hasSpace && strlen(name) > 0)    break;
+            werase(prompt);
+            box(prompt, 0, 0);
+            mvwprintw(prompt, 1, 2, "Niente spazi nel nome!"); // Messaggio d'errore
+            mvwprintw(prompt, 3, 2, "Premi [INVIO]...");
+            wrefresh(prompt);
+            wgetch(prompt);
+        }
 
-        wgetnstr(prompt, name, 31);
         Score::saveScore("Leaderboard.txt", name, p.getScore());
 
         delwin(prompt);

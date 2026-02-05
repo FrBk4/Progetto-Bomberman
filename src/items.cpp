@@ -14,7 +14,10 @@ void Itemlist :: effect_list(char effect, map* level, WINDOW* screen, time_t sta
 
         case 'b':  //incrementatore di raggio - 10s
             if (!*updradius) {
-                if (*radius < 2) *radius+=1;
+                if (*radius < 3) {
+                    if (tempRadius == true) *radius = 3;
+                    else *radius = 2;
+                }
                 *time_effect = time(nullptr) + 10;
             }
             break;
@@ -23,7 +26,7 @@ void Itemlist :: effect_list(char effect, map* level, WINDOW* screen, time_t sta
             if (p->getLives() < 3) p->setLives(p->getLives()+1);
             break;
 
-        case 'w': //wallbreaker (rarissimo) - distrugge tutte le mura distruttibili del livello
+        /* case 'w': //wallbreaker (rarissimo) - distrugge tutte le mura distruttibili del livello
 
             for (int y = 0; y< 23; y++)
                 for (int x = 0; x < 43; x++)
@@ -34,7 +37,7 @@ void Itemlist :: effect_list(char effect, map* level, WINDOW* screen, time_t sta
                         wrefresh(screen);
                         affected[0][level->index] = true;
                     }
-            break;
+            break; */
 
         case 'd': //defender: ti rende invincibile per 10 s
                 *invincible = true;
@@ -62,8 +65,12 @@ void Itemlist :: effect_list(char effect, map* level, WINDOW* screen, time_t sta
                 *time_effect = time(nullptr) +10;
 
         case 'r': //permanent radius
-           *radius = 2;
-            *updradius = true;
+            if (*radius < 3) {
+                *radius += 1;
+                tempRadius = true;
+            }
+            if (*radius == 3)
+                *updradius = true;
             break;
 
     }
@@ -78,20 +85,20 @@ char Itemlist :: spawnrate(int prob) { //funzione che genera item casualmente su
     if (q<prob){
        int p = rand() % 100;
 
-        if(p<33) //radius: prob 33%
+        if(p<35) //radius: prob 35%
             return 'b';
-        if (p<53) //medikit: prob 20%
+        if (p<55) //medikit: prob 20%
             return 'm';
-        if (p<73) //defender: prob 20%
+        if (p<75) //defender: prob 20%
             return 'd';
-        if (p<93) //EXP multiplier: prob 20%
+        if (p<95) //EXP multiplier: prob 20%
             return 'e';
-        if (p<97) //permanent radius: prob. 5%
+        if (p<98) //permanent radius: prob. 3%
             return 'r';
-        if (p == 98) //killer: prob 1%
+        if (p<100) //killer: prob 2%
             return 'k';
-        if (p == 99) //wallbreaker: prob 1%
-            return 'w';
+        /*if (p == 99) //wallbreaker: prob 1%
+            return 'w';*/
 
     }return ' ';
 
@@ -111,41 +118,42 @@ void Itemlist :: reseteffects(WINDOW* screen, int *radius, bool* invincible, int
     *mult = 1;
     box(screen, 0, 0);
     wrefresh(screen);
+    tempRadius = false;
 }
 
 void Itemlist :: printeffects(WINDOW* screen, char effect, bool w, bool k, bool r) {
     switch (effect) {
 
         case 'b':  //incrementatore di raggio - 10s
-            mvwprintw(screen, 0, 23, "<RADIUS>");
+            mvwprintw(screen, 0, 21, "<RADIUS>");
             break;
 
         case 'm':  //medikit - ripristina una vita
-            mvwprintw(screen, 0, 23, "<MEDIKIT>");
+            mvwprintw(screen, 0, 21, "<MEDIKIT>");
             break;
 
 
 
         case 'd': //defender: ti rende invincibile per 10 s
-            mvwprintw(screen, 0, 23, "<INVINC.>");
+            mvwprintw(screen, 0, 21, "<INVINC.>");
             break;
 
 
 
         case 'e': //EXP multiplier: per 10 secondi guadagni punti doppi
-            mvwprintw(screen, 0, 23, "<PUNTI x2>");
+            mvwprintw(screen, 0, 21, "<PUNTIx2>");
             break;
 
         case 'r': //permanent radius
-            mvwprintw(screen, 0, 40, "[R]");
+            mvwprintw(screen, 0, 31, "[RADIUS PERM]");
             break;
 
     }
 
-    if (w)
-        mvwprintw(screen, 0, 40, "[W]");
+    /* if (w)
+        mvwprintw(screen, 0, 40, "[W]");*/
 
 
     if (k)
-        mvwprintw(screen, 0, 37, "[K]");
+        mvwprintw(screen, 0, 35, "[KILL]");
 }

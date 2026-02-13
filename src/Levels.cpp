@@ -199,6 +199,12 @@ void Levels::printscreen(map* level, WINDOW* screen) {
                     wattroff(screen, COLOR_PAIR(4));
                     break;
 
+            case '^':
+                    wattron(screen, COLOR_PAIR(4));
+                    mvwaddch(screen, y+1, x+1, '^');
+                    wattroff(screen, COLOR_PAIR(4));
+                    break;
+
                 default:
                     mvwprintw(screen, y+1, x+1, "%c", level->level[y][x]);
                     break;
@@ -515,7 +521,7 @@ void Levels::run() {
                         break;
                     }
 
-                    if (c>='A'&&c<='Z') {
+                    if ((c>='A'&&c<='Z')||c=='^') {
                         if (c == 'N') {
                             //c = ' ';
                             p.addScore(100 * EXPmult);
@@ -533,11 +539,12 @@ void Levels::run() {
                             p.addScore(100 * EXPmult);
                         }
                         else if (c == '^') {
-                            //c = ' ';
+                            c = items.spawnrate(ITEMS_RATIO);
                             p.addScore(50 * EXPmult);
                         }
 
-                        c = items.spawnrate(ITEMS_RATIO);
+                        if (c!='^')
+                            c = items.spawnrate(ITEMS_RATIO);
                     }
 
                 }
@@ -605,7 +612,7 @@ void Levels::run() {
                 // NEMICO U: piazza bomba
                 // =====================
                 if (enemy == 'U' && !uBombPlaced) {
-                    int r = rand() % 50;
+                    int r = rand() % 25;
                     if (r < 2) {
 
                         // verifica che la cella di destinazione sia libera

@@ -37,7 +37,7 @@ void Menu::initLogo() { // Inizializza il titolo
 }
 
 void Menu::destroyCross(int xRel, int yRel, const int R) { // Animazione per la distruzione del titolo per via delle bombe
-    auto burn = [&](int x, int y) {
+    auto burn = [&](int x, int y) { // Cancella i caratteri del titolo
         if (y < 0 || y >= LogoLines) return;
         if (x < 0 || x >= logoWidth) return;
 
@@ -64,7 +64,7 @@ void Menu::startBombAnimation() { // Funzione che da il via a tutto il processo 
 
     double t0 = nowSec(); // Tempo di inizio
     animActive = true;
-    animEndAt = t0 + 2.6;
+    animEndAt = t0 + 2.6; // Durata esplosione singola bomba
 
     srand(time(nullptr)); // Per la generazione della posizione delle bombe
 
@@ -89,7 +89,7 @@ void Menu::updateBombAnimation() {
         animActive = false;
     }
 
-    for (int y = 0; y < LogoLines; y++) {
+    for (int y = 0; y < LogoLines; y++) { // Resetta il contatore per la durata dell'animazione su ogni casella a 0
         for (int x = 0; x < logoWidth; x++) {
             if (flameTicks[y][x] > 0) flameTicks[y][x]--;
         }
@@ -214,7 +214,7 @@ int Menu::run(const string items[], // Fa runnare tutto il menu e gestisce l'inp
 
                 while (animActive) {
                     draw(items, countItems, selected, key, subtitles, countSubt);
-                    napms(16); // ~60 FPS
+                    napms(16);
                 }
             }
             return selected; // Infine ritorna a Game::run() cosa è stato selezionato

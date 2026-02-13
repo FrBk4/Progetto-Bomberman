@@ -542,11 +542,9 @@ void Levels::run() {
                             c = items.spawnrate(ITEMS_RATIO);
                             p.addScore(50 * EXPmult);
                         }
-
                         if (c!='^')
                             c = items.spawnrate(ITEMS_RATIO);
                     }
-
                 }
             }
 

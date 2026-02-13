@@ -173,9 +173,6 @@ void Leaderboard::drawDynamic() { // Disegna ciò che cambia ogni frame (pulsazi
 }
 
 void Leaderboard::draw() { // Si occupa di chiamare i vari metodi per la grafica della schermata
-    int hMax, wMax;
-    getmaxyx(stdscr, hMax, wMax);
-
     drawStatic(); // Disegna cosa non cambia a ogni ciclo (le cornici)
     drawDynamic(); // Disegna cosa cambia a ogni ciclo (l'ascii art e i componenti del menu)
 

@@ -151,7 +151,7 @@ void Menu::draw(const string items[], // Gestisce la stampa delle varie cose
     }
 
     if (key == int('p')) // Stampa dei comandi
-        mvprintw(1, 2, "[SU/GIU] o [W/S] per muovere, [INVIO] per scegliere, [ESC] per uscire");
+        mvprintw(1, 2, "[SU/GIU] o [W/S] per muovere, [K] per distruggere il titolo, [INVIO] per scegliere, [ESC] per uscire");
     if (key == int('q')) { // Nasconde i comandi (premendo di nuovo "p")
         move (2, 0);
         clrtoeol();
@@ -218,6 +218,14 @@ int Menu::run(const string items[], // Fa runnare tutto il menu e gestisce l'inp
                 }
             }
             return selected; // Infine ritorna a Game::run() cosa è stato selezionato
+        }
+        else if (ch == 'k') {
+            startBombAnimation(); // Avvia animazione bombe sul titolo
+
+            while (animActive) {
+                draw(items, countItems, selected, key, subtitles, countSubt);
+                napms(16);
+            }
         }
     }
 }
